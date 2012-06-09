@@ -1,239 +1,41 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Is {{text}} responsive? - areyouresponsive.com</title>
+    <title>Journey to the Center of Hawkthorne Costume Tester</title>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script>
-      $(document).ready(function() {
-
-        var Responsive = {
-          update: function(url) {
-            var link = url;
-            if (url.substring(7,0) !== "http://" && url.substring(8,0) !== "https://") {
-              link = "http://" + url;
-            }
-
-            if (link.indexOf("areyouresponsive.com") != -1) {
-              link = "http://en.wikipedia.org/wiki/Recursion";
-            }
-
-            $("#views div").each(function() {
-              $(this).find("iframe").remove();
-              var obj = $('<iframe>').attr("src", link);
-              $(this).append(obj);
-            });
-            return url;
-          }
-        }
-
-        $('#url').submit(function(e) { 
-          e.preventDefault();      
-
-          // Update all the iframes
-          var url = $(this).find("input").val();
-          url = Responsive.update(url);
-
-          if (window.history && history.pushState) {
-            history.pushState({"url":url}, "Page Tile", encodeURIComponent(url));
-          }
-
-          // return false to prevent normal browser submit and page navigation 
-          return false; 
-        });
-
-        window.onpopstate = function(event) {  
-          if (event.state) {
-            $("input").val(event.state.url);
-            Responsive.update(event.state.url);
-          }
-        }; 
-      });
-    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link href='http://fonts.googleapis.com/css?family=Bitter&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-    <style>
-      /* http://meyerweb.com/eric/tools/css/reset/ 
-      v2.0 | 20110126
-      License: none (public domain)
-      */
-
-      html, body, div, span, applet, iframe, iframe,
-      h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-      a, abbr, acronym, address, big, cite, code,
-      del, dfn, em, img, ins, kbd, q, s, samp,
-      small, strike, strong, sub, sup, tt, var,
-      b, u, i, center,
-      dl, dt, dd, ol, ul, li,
-      fieldset, form, label, legend,
-      table, caption, tbody, tfoot, thead, tr, th, td,
-      article, aside, canvas, details, embed, 
-      figure, figcaption, footer, header, hgroup, 
-      menu, nav, output, ruby, section, summary,
-      time, mark, audio, video {
-        margin: 0;
-        padding: 0;
-        border: 0;
-        font-size: 100%;
-        font: inherit;
-        vertical-align: baseline;
-      }
-      /* HTML5 display-role reset for older browsers */
-      article, aside, details, figcaption, figure, 
-      footer, header, hgroup, menu, nav, section {
-        display: block;
-      }
-      body {
-        line-height: 1;
-      }
-      ol, ul {
-        list-style: none;
-      }
-      blockquote, q {
-        quotes: none;
-      }
-      blockquote:before, blockquote:after,
-      q:before, q:after {
-        content: '';
-        content: none;
-      }
-      table {
-        border-collapse: collapse;
-        border-spacing: 0;
-      }
-      body {
-        background: #1F2F3A;
-        font-family: 'Bitter', serif;
-        /*background: #9FB982;*/
-      }
-      header form {
-        padding: 10px 0px;
-      }
-      header input:focus{
-        outline: none;
-      }
-      header input {
-        color: #98092B;
-        background: none;
-        border: 0;
-        border-bottom: 1px dotted #1F2F3A;
-        text-align: center;
-        font-size: 1em;
-        width: 100%;
-        font-family: 'Bitter', serif;
-      }
-      header {
-        position: fixed;
-        font-size: 1.2em;
-        left: 0;
-        right: 0;
-        border-bottom: 5px #c9c392 solid;
-        background: #E0DAA3;
-        text-align: center;
-      }
-
-      footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 7px;
-        font-size: .9em;
-        text-align: right;
-        border-top: 5px #8ea674 solid;
-        background: #9FB982;
-      }
-
-      section {
-        position: absolute;
-        top: 90px;
-        bottom: 50px;
-        margin: 0 auto;
-        width: 1275px;
-      }
-
-      #views iframe {
-        -webkit-transform: scale(.30);
-        -webkit-transform-origin: top left; 
-        height: 333.3333333%;
-        margin: 0;
-        padding: 0;
-      }
-
-      section > div {
-        display: inline-block;
-        overflow: hidden;
-        height: 100%;
-        margin: 0px 20px;
-        border: 1px solid black;
-        background: #fff;
-      }
-      #smartphone {
-        width: 96px;
-      }
-      #smartphone > iframe{
-        width: 320px;
-      }
-      #tablet {
-        width: 230.4px;
-      }
-      #tablet > iframe{
-        width: 768px;
-      }
-
-      #netbook {
-        width: 315px;
-      }
-      #netbook > iframe{
-        width: 1050px; 
-      }
-
-      #desktop {
-        width: 450px;
-      }
-      #desktop > iframe{
-        width: 1500px;
-      }
-    </style>      
-    <script type="text/javascript">
-
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-6732441-5']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
+    <link href="{{ url_for('static', filename='style.css') }}" rel='stylesheet' type='text/css'>
+   </style>      
   </head>
   <body> 
+    <div id="wrapper">
     <header>
-      <form id="url">
-        <h1>Are you responsive?</h1>
-        <input tabindex=0 type="text" name="url" value="{{text}}"> 
+      <h1>Journey to the Center of Hawkthorne Costume Tester</h1>
+      <form id="costume" method="post">
+        <p>
+        <label for="character">Character</label>
+        <select id="character" name="character">
+          {% for person in characters %}
+          <option value="{{person}}" {% if person == character %}selected{%endif%}>{{ person|title}}</option>
+          {% endfor %}
+        </select>
+      </p>
+      <p>
+        <label for="url">Costume URL</label>
+        <input tabindex=0 type="text" id="url" name="url" value="{{source}}"> 
+      </p>
       </form>
     </header>
-    <section id="views">
-      <div id="smartphone">
-        <iframe src="{{source}}"></iframe>
-      </div>
-      <div id="tablet">
-        <iframe src="{{source}}"></iframe>
-      </div>
-      <div id="netbook">
-        <iframe src="{{source}}"></iframe>
-      </div>
-      <div id="desktop">
-        <iframe src="{{source}}"></iframe>
-      </div>
-    </section>
-    <footer>
-      <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=derferman&repo=areyouresponsive&type=watch"
-  allowtransparency="true" frameborder="0" scrolling="0" width="62px" height="20px"></iframe>
-      <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=derferman&type=follow"
-        allowtransparency="true" frameborder="0" scrolling="0" width="132px" height="20px"></iframe>
-    </footer>
+    <div id="artboard">
+      <img id="oldbusted" src="{{original}}" />
+      <img id="newhotness" src="{{source}}" />
+    </div>
+    <div id="toolbar">
+      <button class="costume">Toggle Costume</button>
+      <button class="bg">Toggle Background</button>
+    </div>
+  </div>
   </body>
 </html>
