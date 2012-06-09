@@ -1,3 +1,3 @@
-# Are you responsive?
+# Costume Testing
 
-A small site that make developing responsive websites easier.
+Test custom costumes for [Journey to the Center of Hawkthorne](https://github.com/kyleconroy/hawkthorne-journey)
