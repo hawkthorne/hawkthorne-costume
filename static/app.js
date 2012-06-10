@@ -24,10 +24,12 @@ $(document).ready(function() {
   function updateCostume(url) {
     if (url) {
       $("#newhotness").show();
+      $("#oldbusted").hide();
       $("#newhotness").attr('src', url);
     } else {
       $("#newhotness").attr('src', '');
       $("#newhotness").hide();
+      $("#oldbusted").show();
     }
   }
 
@@ -45,6 +47,7 @@ $(document).ready(function() {
   $('#toolbar .costume').click(function(e) { 
     e.preventDefault();
     $("#newhotness").toggle();
+    $("#oldbusted").toggle();
   });
 
   var bg = "#34c429";

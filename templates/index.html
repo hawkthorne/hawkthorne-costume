@@ -29,8 +29,13 @@
       </form>
     </header>
     <div id="artboard">
-      <img id="oldbusted" src="{{original}}" />
-      <img id="newhotness" src="{{source}}" />
+      {% if source %}
+        <img style="display:none;" id="oldbusted" src="{{original}}" />
+        <img id="newhotness" src="{{source}}" />
+      {% else %}
+        <img id="oldbusted" src="{{original}}" />
+        <img style="display:none;"id="newhotness" src="{{source}}" />
+      {% endif %}
     </div>
     <div id="toolbar">
       <button class="costume">Toggle Costume</button>
