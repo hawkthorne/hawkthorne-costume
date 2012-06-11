@@ -44,6 +44,11 @@ $(document).ready(function() {
     updateUrl();
   });
 
+  $('#toolbar .description').click(function(e) {
+    e.preventDefault();
+    $('.descriptions').toggle();
+  });
+
   $('#toolbar .costume').click(function(e) { 
     e.preventDefault();
     $("#newhotness").toggle();
