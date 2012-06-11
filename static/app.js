@@ -50,13 +50,12 @@ $(document).ready(function() {
     $("#oldbusted").toggle();
   });
 
-  var bg = "#34c429";
+  var bgtoggle = 0;
 
   $('#toolbar .bg').click(function(e) { 
     e.preventDefault();
-    var temp = bg;
-    bg = $("#artboard").css('background');
-    $("#artboard").css('background', temp);
+    bgtoggle++;
+    $("#artboard").css('background', bgtoggle % 2 ? '#34c429' : '');
   });
 
 

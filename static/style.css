@@ -89,17 +89,10 @@ header form label {
 }
 
 #artboard {
-  position: relative;
   margin-top: 20px;
   border: solid 5px #14222c;
   min-height: 200px;
   background: #fff url('bg.png');
-}
-
-#newhotness {
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 
 #toolbar {
