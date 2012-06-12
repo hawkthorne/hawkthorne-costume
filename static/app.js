@@ -120,7 +120,7 @@ var sprites = {
     {name: 'walk carry', count: 3, description: 'The character carrying a lifted item.'},
     {count:3},
   ],
-  holding: [
+  holdleft: [
     {name: 'idle', count: 1, description: 'The character standing still while holding an item.'},
     {name: 'look up', count: 1, description: 'The character looking up while holding an item.'},
     {name: 'look down', count: 1, description: 'The character looking up while holding an item.'},
@@ -149,11 +149,12 @@ var sprites = {
   ]
 };
 
-$(document).ready(function() {
+function generate(right) {
   var buildstring = '';
   var layoutstring = '<tr>'+"\r\n";
+  var layoutstringright = '';
   var tempcount = 0;
-
+  
   for (var x in sprites) {
     if (!sprites.hasOwnProperty(x)) { continue; }
 
@@ -163,14 +164,25 @@ $(document).ready(function() {
       }
 
       for (var j = 1; j <= sprites[x][i].count; j++) {
-        if (sprites[x][i].name) {
-          layoutstring += '<td>'+x[0]+'<wbr>_'+sprites[x][i].name.replace(/\W/g,'<wbr>')+'<wbr>_'+j+'</td>'+"\r\n";
+        if (right && (x == 'left' || x == 'holdleft' || x== 'extended')) {
+          if (sprites[x][i].name) {
+            layoutstring += '<td>'+x[0]+'<wbr>_'+sprites[x][i].name.replace(/\W/g,'<wbr>')+'<wbr>_'+j+'</td>'+"\r\n";
+            layoutstringright += '<td>'+x[0].replace('l','')+'r'+'<wbr>_'+sprites[x][i].name.replace(/\W/g,'<wbr>')+'<wbr>_'+j+'</td>'+"\r\n";
+          } else {
+            layoutstring += '<td></td>'+"\r\n";
+            layoutstringright += '<td></td>'+"\r\n";
+          }          
         } else {
-          layoutstring += '<td></td>'+"\r\n";
+          if (sprites[x][i].name) {
+            layoutstring += '<td>'+x[0]+'<wbr>_'+sprites[x][i].name.replace(/\W/g,'<wbr>')+'<wbr>_'+j+'</td>'+"\r\n";
+          } else {
+            layoutstring += '<td></td>'+"\r\n";
+          }
         }
         tempcount++;
         if (tempcount % 9 === 0) {
-          layoutstring += '</tr>'+"\r\n"+'<tr>'+"\r\n";
+          layoutstring += layoutstringright + '</tr>'+"\r\n"+'<tr>'+"\r\n";
+          layoutstringright = '';
         }
       }
     }
@@ -179,6 +191,17 @@ $(document).ready(function() {
   
   layoutstring += '</tr>';
   
+  if (right) { $('#artboard').addClass('double'); }
   $(buildstring).appendTo('.spritelisting tbody');
   $(layoutstring).appendTo('.spritesheet tbody');
+}
+
+$(document).ready(function() {
+  generate();
+
+  $('.addright').click(function() {
+    $('.spritesheet tbody').empty();
+    $('.spritelisting tbody').empty();
+    generate(true);
+  });
 });
