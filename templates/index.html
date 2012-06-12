@@ -13,22 +13,33 @@
     <div id="wrapper">
     <header>
       <h1>Journey to the Center of Hawkthorne Costume Tester</h1>
-      <form id="costume" method="post">
-        <p>
-        <label for="character">Character</label>
-        <select id="character" name="character">
-          {% for person in characters %}
-          <option value="{{person}}" {% if person == character %}selected{%endif%}>{{ person|title}}</option>
-          {% endfor %}
-        </select>
-      </p>
-      <p>
-        <label for="url">Costume URL</label>
-        <input tabindex=0 type="text" id="url" name="url" value="{{source}}"> 
-      </p>
-      </form>
+      <form action="" method="post"><div>
+        <div>
+          <label for="character">Character</label>
+            <select id="character" name="character">
+              {% for person in characters %}
+              <option value="{{person}}" {% if person == character %}selected{%endif%}>{{ person|title}}</option>
+              {% endfor %}
+            </select>
+        </div>
+        <div>
+          <label for="url">Costume URL</label>
+            <input type="text" id="url" name="url" value="{{source}}" />
+        </div>
+        <div id="toolbar">
+          <button class="description">Toggle Descriptions</button>
+          <button class="costume">Toggle Costume</button>
+          <button class="bg">Toggle Background</button>
+          <div class="submit">
+            <a href="http://www.reddit.com/r/hawkthorne/submit" onclick="this.href += '?url=' + encodeURIComponent(window.location);"><img src="http://www.reddit.com/static/spreddit11.gif" alt="submit to reddit" border="0" /></a>
+          </div>
+        </div>
+      </div></form>
     </header>
     <div id="artboard">
+      <table class="spritesheet" cellspacing="0">
+        <tbody></tbody>
+      </table>
       {% if source %}
         <img style="display:none;" id="oldbusted" src="{{original}}" />
         <img id="newhotness" src="{{source}}" />
@@ -37,11 +48,27 @@
         <img style="display:none;"id="newhotness" src="{{source}}" />
       {% endif %}
     </div>
-    <div id="toolbar">
-      <button class="costume">Toggle Costume</button>
-      <button class="bg">Toggle Background</button>
-      <a href="http://www.reddit.com/submit" onclick="window.location = 'http://www.reddit.com/r/hawkthorne/submit?url=' + encodeURIComponent(window.location); return false"> <img src="http://www.reddit.com/static/spreddit11.gif" alt="submit to reddit" border="0" /> </a>
-    </div>
+    <section class="spritelisting">
+      <h1>List of Sprites</h1>
+      <table>
+        <thead>
+          <tr><th>Angle</th>
+            <th>Frames</th>
+            <th>Name</th>
+            <th>Description</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+    <section class="faq">
+      <h1>FAQ</h1>
+      <dl>
+        <dt>Why do I not need to create a right-facing version of these sprites?</dt>
+          <dd>Because that can be programmatically generated from the left-facing version.</dd>
+        <dt>But I actually do need to manually create a right-facing version!</dt>
+          <dd>Oh, so you've got a really weird costume or character. Fine, <a href="#" class="addright">click here</a>.</dd>
+      </dl>
+    </section>
   </div>
   </body>
 </html>
