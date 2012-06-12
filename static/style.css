@@ -108,3 +108,19 @@ header form label {
   font-size: 18px;
 }
 
+.descriptions { position: absolute; font: normal normal 9px Arial, sans-serif; }
+
+.descriptions td {
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  padding: 0;
+  vertical-align: top;
+  text-align: center;
+  color: #F00;
+  text-shadow:
+    -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+    1px 1px 0 #fff;
+}

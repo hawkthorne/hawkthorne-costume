@@ -29,6 +29,62 @@
       </form>
     </header>
     <div id="artboard">
+      <table class="descriptions" cellspacing="0">
+        <tr><td>l_idle</td>
+          <td>l_walk1</td>
+          <td>l_walk2</td>
+          <td>l_walk3</td>
+          <td>l_talk</td>
+          <td>l_lookdown</td>
+          <td>l_jump</td>
+          <td>l_lookup</td>
+          <td>l_dead</td></tr>
+        <tr><td>r_idle</td>
+          <td>r_walk1</td>
+          <td>r_walk2</td>
+          <td>r_walk3</td>
+          <td>r_talk</td>
+          <td>r_lookdown</td>
+          <td>r_jump</td>
+          <td>r_lookup</td>
+          <td>r_dead</td></tr>
+        <tr><td>f_idle</td>
+          <td>f_walk1</td>
+          <td>f_walk2</td>
+          <td>f_walk3</td>
+          <td>l_drag1</td>
+          <td>l_drag2</td>
+          <td>l_drag3</td>
+          <td>r_push1</td>
+          <td>r_push2</td></tr>
+        <tr><td>b_idle</td>
+          <td>b_walk1</td>
+          <td>b_walk2</td>
+          <td>b_walk3</td>
+          <td>r_drag1</td>
+          <td>r_drag2</td>
+          <td>r_drag3</td>
+          <td>l_push1</td>
+          <td>l_push2</td></tr>
+        <tr><td>r_damage1</td>
+          <td>r_damage2</td>
+          <td>r_holdidle</td>
+          <td>r_holdwalk1</td>
+          <td>r_holdwalk2</td>
+          <td>r_attack1</td>
+          <td>r_attack2</td>
+          <td>r_attack3</td>
+          <td>r_crouch</td></tr>
+        <tr><td>l_damage1</td>
+          <td>l_damage2</td>
+          <td>l_holdidle</td>
+          <td>l_holdwalk1</td>
+          <td>l_holdwalk2</td>
+          <td>l_attack1</td>
+          <td>l_attack2</td>
+          <td>l_attack3</td>
+          <td>l_crouch</td></tr>
+      </table>
       {% if source %}
         <img style="display:none;" id="oldbusted" src="{{original}}" />
         <img id="newhotness" src="{{source}}" />
@@ -38,6 +94,7 @@
       {% endif %}
     </div>
     <div id="toolbar">
+      <button class="description">Toggle Descriptions</button>
       <button class="costume">Toggle Costume</button>
       <button class="bg">Toggle Background</button>
       <a href="http://www.reddit.com/submit" onclick="window.location = 'http://www.reddit.com/r/hawkthorne/submit?url=' + encodeURIComponent(window.location); return false"> <img src="http://www.reddit.com/static/spreddit11.gif" alt="submit to reddit" border="0" /> </a>
