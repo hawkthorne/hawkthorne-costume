@@ -15,7 +15,7 @@ def index_with_url(character, in_url=''):
         return "I don't know who that character is", 404
 
     url = urllib.unquote(in_url)
-    if url and not url.startswith("https://") and not url.startswith("http://"):
+    if url and not url.startswith("https://") and not url.startswith("http://") and not url.startswith("data:"):
         url = "http://" + url
 
     sprite = baseurl + character + ".png"
