@@ -118,20 +118,35 @@ var sprites = {
     {name: 'dead', count: 1, description: 'The character dead.'},
     {name: 'lift', count: 3, description: 'The character lifting an item above their head arms to one side at: -45º, 45º, 90º. Ends in "carry" state.'},
     {name: 'walk carry', count: 3, description: 'The character carrying a lifted item.'},
-    {count:3},
+    {name: 'throw carry', count: 3, description: 'The character throwing a lifted item.'}
   ],
-  holdleft: [
-    {name: 'idle', count: 1, description: 'The character standing still while holding an item.'},
-    {name: 'look up', count: 1, description: 'The character looking up while holding an item.'},
-    {name: 'look down', count: 1, description: 'The character looking up while holding an item.'},
-    {name: 'take damage', count: 2, description: 'The character taking damage while holding an item.'},
-    {count:4},
-    {name: 'walk', count: 3, description: 'The character walking while holding an item.'},
-    {name: 'talk', count: 3, description: 'The character talking while holding an item.'},
-    {name: 'jump', count: 3, description: 'The character jumping while holding an item.'},
-    {name: 'attack one', count: 3, description: 'The character performing the primary attack with the item.'},
-    {name: 'attack two', count: 3, description: 'The character performing the secondary attack with the item.'},
-    {name: 'attack three', count: 3, description: 'The character performing the tertiary attack with the item.'}
+  onehandedleft: [
+    {name: 'idle', count: 1, description: 'The character standing still while holding a one-handed item.'},
+    {name: 'look up', count: 1, description: 'The character looking up while holding a one-handed item.'},
+    {name: 'look down', count: 1, description: 'The character looking down while holding a one-handed item.'},
+    {name: 'take damage', count: 2, description: 'The character taking damage while holding a one-handed item.'},
+    {count:1},
+    {name: 'throw', count: 3, description: 'The character throwing a one-handed item.'},
+    {name: 'walk', count: 3, description: 'The character walking while holding a one-handed item.'},
+    {name: 'talk', count: 3, description: 'The character talking while holding a one-handed item.'},
+    {name: 'jump', count: 3, description: 'The character jumping while holding a one-handed item.'},
+    {name: 'attack one', count: 3, description: 'The character performing the primary attack with a one-handed item.'},
+    {name: 'attack two', count: 3, description: 'The character performing the secondary attack with a one-handed item.'},
+    {name: 'attack three', count: 3, description: 'The character performing the tertiary attack with a one-handed item.'}
+  ],
+  twohandedleft: [
+    {name: 'idle', count: 1, description: 'The character standing still while holding a two-handed item. (Should include bows.)'},
+    {name: 'look up', count: 1, description: 'The character looking up while holding a two-handed item. (Should include bows.)'},
+    {name: 'look down', count: 1, description: 'The character looking down while holding a two-handed item. (Should include bows.)'},
+    {name: 'take damage', count: 2, description: 'The character taking damage while holding a two-handed item. (Should include bows.)'},
+    {count:1},
+    {name: 'throw', count: 3, description: 'The character throwing a two-handed item. (Should include bows.)'},
+    {name: 'walk', count: 3, description: 'The character walking while holding a two-handed item. (Should include bows.)'},
+    {name: 'talk', count: 3, description: 'The character talking while holding a two-handed item. (Should include bows.)'},
+    {name: 'jump', count: 3, description: 'The character jumping while holding a two-handed item. (Should include bows.)'},
+    {name: 'attack two', count: 3, description: 'The character performing the primary attack with a two-handed item. (Should include bows.)'},
+    {name: 'attack two', count: 3, description: 'The character performing the secondary attack with a two-handed item. (Should include bows.)'},
+    {name: 'attack three', count: 3, description: 'The character performing the tertiary attack with a two-handed item. (Should include bows.)'}
   ],
   forward: [
     {name: 'idle', count: 1, description: 'The character directly facing the screen.'},
@@ -164,7 +179,7 @@ function generate(right) {
       }
 
       for (var j = 1; j <= sprites[x][i].count; j++) {
-        if (right && (x == 'left' || x == 'holdleft' || x== 'extended')) {
+        if (right && (x == 'left' || x == 'onehandedleft' || x == 'twohandedleft' || x == 'extended')) {
           if (sprites[x][i].name) {
             layoutstring += '<td>'+x[0]+'<wbr>_'+sprites[x][i].name.replace(/\W/g,'<wbr>')+'<wbr>_'+j+'</td>'+"\r\n";
             layoutstringright += '<td>'+x[0].replace('l','')+'r'+'<wbr>_'+sprites[x][i].name.replace(/\W/g,'<wbr>')+'<wbr>_'+j+'</td>'+"\r\n";
