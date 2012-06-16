@@ -63,7 +63,7 @@ header form select { -moz-box-sizing: border-box; -webkit-box-sizing: border-box
 #toolbar > * { font-size: 1em; display: inline-block; }
 #toolbar .submit { margin: 15px 0 0; }
 
-#artboard { position: relative; width: 432px; height: 624px; border: solid 5px #14222c; margin: 20px auto; overflow: hidden; background: #fff url('bg.png'); }
+#artboard { position: relative; width: 432px; height: 768px; border: solid 5px #14222c; margin: 20px auto; overflow: hidden; background: #fff url('bg.png'); }
 #artboard > * { position: absolute; left: 0; top: 0; }
 
 #artboard.double { width: 864px; margin-left: -132px; }
