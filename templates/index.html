@@ -27,7 +27,6 @@
             <input type="text" id="url" name="url" value="{{source}}" />
         </div>
         <div id="toolbar">
-          <button class="description">Toggle Descriptions</button>
           <button class="costume">Toggle Costume</button>
           <button class="bg">Toggle Background</button>
           <div class="submit">
@@ -37,9 +36,6 @@
       </div></form>
     </header>
     <div id="artboard">
-      <table class="spritesheet" cellspacing="0">
-        <tbody></tbody>
-      </table>
       {% if source %}
         <img style="display:none;" id="oldbusted" src="{{original}}" />
         <img id="newhotness" src="{{source}}" />
@@ -48,25 +44,11 @@
         <img style="display:none;"id="newhotness" src="{{source}}" />
       {% endif %}
     </div>
-    <section class="spritelisting">
-      <h1>List of Sprites</h1>
-      <table>
-        <thead>
-          <tr><th>Angle</th>
-            <th>Frames</th>
-            <th>Name</th>
-            <th>Description</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
     <section class="faq">
       <h1>FAQ</h1>
       <dl>
-        <dt>Why do I not need to create a right-facing version of these sprites?</dt>
-          <dd>Because that can be programmatically generated from the left-facing version.</dd>
-        <dt>But I actually do need to manually create a right-facing version!</dt>
-          <dd>Oh, so you've got a really weird costume or character. Fine, <a href="#" class="addright">click here</a>.</dd>
+        <dt>How do I create my own character?</dt>
+        <dd>Follow the <a href="https://github.com/kyleconroy/hawkthorne-journey/wiki/Character-creation-guide">Character Creation Guide</a></dd>
       </dl>
     </section>
   </div>

@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 baseurl = ("https://github.com/kyleconroy/hawkthorne-journey/raw/"
            "master/src/images/")
-characters = ['jeff', 'troy', 'annie', 'britta', 'shirley', 'pierce', 'abed', 'chang']
+characters = ['jeff', 'troy', 'annie', 'britta', 'shirley', 'pierce', 'abed']
 
 @app.route("/<character>")
 @app.route("/<character>/<path:in_url>")

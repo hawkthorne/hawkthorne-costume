@@ -60,13 +60,9 @@ header form input,
 header form select { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; display: inline-block; color: #98092B; font-size: 1em; width: 77%; font-family: 'Bitter', serif; margin-bottom: 5px; }
 
 #toolbar { margin-top: 15px; text-align: center; }
-#toolbar > * { font-size: 1em; display: inline-block; }
-#toolbar .submit { margin: 15px 0 0; }
+#toolbar > * { font-size: 1em; display: inline-block; vertical-align: middle}
 
-#artboard { position: relative; width: 432px; height: 624px; border: solid 5px #14222c; margin: 20px auto; overflow: hidden; background: #fff url('bg.png'); }
-#artboard > * { position: absolute; left: 0; top: 0; }
-
-#artboard.double { width: 864px; margin-left: -132px; }
+#artboard { border: solid 5px #14222c; margin: 20px auto; overflow: hidden; background: #fff url('bg.png'); }
 
 .spritesheet { z-index: 3; font: normal normal 9px Arial, sans-serif; }
 .spritesheet td {
