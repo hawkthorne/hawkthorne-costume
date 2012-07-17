@@ -18,7 +18,7 @@
           <label for="character">Character</label>
             <select id="character" name="character">
               {% for person in characters %}
-              <option value="{{person}}" {% if person == character %}selected{%endif%}>{{ person|title}}</option>
+              <option value="{{person}}" {% if person == character %}selected{% endif %}>{{ person|title }}</option>
               {% endfor %}
             </select>
         </div>
