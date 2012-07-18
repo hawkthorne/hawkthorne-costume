@@ -1,68 +1,72 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Journey to the Center of Hawkthorne Costume Tester</title>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link href='http://fonts.googleapis.com/css?family=Bitter&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-    <link href="{{ url_for('static', filename='style.css') }}" rel='stylesheet' type='text/css'>
-   </style>      
-  </head>
-  <body> 
-    <div id="wrapper">
-    <header>
-      <h1>Journey to the Center of Hawkthorne Costume Tester</h1>
-      <form action="" method="post"><div>
-        <div>
-          <label for="character">Character</label>
-            <select id="character" name="character">
-              {% for person in characters %}
-              <option value="{{person}}" {% if person == character %}selected{% endif %}>{{ person|title }}</option>
-              {% endfor %}
-            </select>
-        </div>
-        <div>
-          <label for="url">Costume URL</label>
-            <input type="text" id="url" name="url" value="{{source}}" />
-        </div>
-        <div id="toolbar">
-          <button class="costume">Toggle Costume</button>
-          <button class="bg">Toggle Background</button>
-          <div class="submit">
-            <a href="http://www.reddit.com/r/hawkthorne/submit" onclick="this.href += '?url=' + encodeURIComponent(window.location);"><img src="http://www.reddit.com/static/spreddit11.gif" alt="submit to reddit" border="0" /></a>
-          </div>
-        </div>
-      </div></form>
-    </header>
-	<div id="inspector_spacetime">
-		<div class="controls">
-			Inspector Size: <input id="zoom_slide" type="range" min="1" max="10" value="5"/> <span class="zoom_size">x5</span>
+	<head>
+		<title>Journey to the Center of Hawkthorne Costume Tester</title>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='jquery.hotkeys.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+		<link href='http://fonts.googleapis.com/css?family=Bitter&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+		<link href="{{ url_for('static', filename='style.css') }}" rel='stylesheet' type='text/css'>
+	</head>
+	<body>
+		<div id="wrapper">
+			<header>
+				<h1>Journey to the Center of Hawkthorne Costume Tester</h1>
+				<form action="" method="post"><div>
+					<div>
+						<label for="character">Character</label>
+						<select id="character" name="character">
+							{% for person in characters %}
+							<option value="{{person}}" {% if person == character %}selected{% endif %}>{{ person|title }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div>
+						<label for="url">Costume URL</label>
+						<input type="text" id="url" name="url" value="{{source}}" />
+					</div>
+					<div id="toolbar">
+						<button class="costume">Toggle Costume</button>
+						<button class="bg">Toggle Background</button>
+						<div class="submit">
+							<a href="http://www.reddit.com/r/hawkthorne/submit" onclick="this.href += '?url=' + encodeURIComponent(window.location);">
+								<img src="http://www.reddit.com/static/spreddit11.gif" alt="submit to reddit" border="0" />
+							</a>
+						</div>
+					</div>
+				</form>
+			</header>
+			<div id="inspector_spacetime">
+				<div class="controls">
+					Inspector Size: <input id="zoom_slide" type="range" min="1" max="10" value="5"/> <span class="zoom_size">x5</span>
+				</div>
+				<div class="canvas_holder">
+					<canvas id="canvas" width="480" height="480" style="width: 240px; height: 240px;"></canvas>
+				</div>
+				<div class="controls">
+					<button class="play_all">Play All</button>
+					<button class="stop">Stop</button>
+					Use the arrow keys to move around
+				</div>
+			</div>
+			<div id="artboard">
+				<div class="highlighter"></div>
+				{% if source %}
+				<img style="display:none;" id="oldbusted" src="{{original}}" />
+				<img id="newhotness" src="{{source}}" />
+				{% else %}
+				<img id="oldbusted" src="{{original}}" />
+				<img style="display:none;"id="newhotness" src="{{source}}" />
+				{% endif %}
+			</div>
+			<section class="faq">
+				<h1>FAQ</h1>
+				<dl>
+					<dt>How do I create my own character?</dt>
+					<dd>Follow the <a href="https://github.com/kyleconroy/hawkthorne-journey/wiki/Character-creation-guide">Character Creation Guide</a></dd>
+				</dl>
+			</section>
 		</div>
-		<div class="canvas_holder">
-			<canvas id="canvas" width="480" height="480" style="width: 240px; height: 240px;"></canvas>
-		</div>
-		<div class="controls">
-			<button class="play">Play All</button>
-		</div>
-	</div>
-    <div id="artboard">
-		<div class="highlighter"></div>
-      {% if source %}
-        <img style="display:none;" id="oldbusted" src="{{original}}" />
-        <img id="newhotness" src="{{source}}" />
-      {% else %}
-        <img id="oldbusted" src="{{original}}" />
-        <img style="display:none;"id="newhotness" src="{{source}}" />
-      {% endif %}
-    </div>
-    <section class="faq">
-      <h1>FAQ</h1>
-      <dl>
-        <dt>How do I create my own character?</dt>
-        <dd>Follow the <a href="https://github.com/kyleconroy/hawkthorne-journey/wiki/Character-creation-guide">Character Creation Guide</a></dd>
-      </dl>
-    </section>
-  </div>
-  </body>
+	</body>
 </html>

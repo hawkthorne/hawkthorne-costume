@@ -82,6 +82,14 @@ app.get('/', function( req, res ) {
 	res.redirect('/abed');
 });
 
+app.post('/', function( req, res ) {
+	var character = req.body.character || 'abed',
+		costume = req.body.url || false,
+		url = '/' + character;
+	if( costume ) url += '/' + encodeURIComponent( costume );
+	res.redirect( url );
+});
+
 app.dynamicHelpers({
 	url_for: function() { return function( dir, filename ) { return '/' + dir + '/' + filename; }; }
 });
