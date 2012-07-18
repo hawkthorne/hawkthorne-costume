@@ -1,17 +1,10 @@
-var $newhotness, $oldbusted, $character, $costume_btn, $background_btn,
-	$costume, $url, $artboard, $highlighter, $play_all, $stop, $canvas, c, $zoom_slide, $zoom_size;
+var $newhotness, $oldbusted, $character, $bg,
+	$costume, $url, $artboard, $highlighter, $play_buttons,
+	$canvas, c, $zoom_slide, $zoom_size, $char_opacity, $char_opacity_size;
 
-var big_image = false,
-	motion = { stop: {}, run: {} };
-
-motion.stop.left = [ 0, 0 ];
-motion.run.left = [ [ 1, 0 ], [ 2, 0 ], [ 3, 0 ] ];
-motion.stop.right = [ 0, 1 ];
-motion.run.right = [ [ 1, 1 ], [ 2, 1 ], [ 3, 1 ] ];
-motion.stop.down = [ 0, 2 ];
-motion.run.down = [ [ 1, 2 ], [ 2, 2 ] ];
-motion.stop.up = [ 0, 3 ];
-motion.run.up = [ [ 1, 3 ], [ 2, 3 ] ];
+var image = {};
+	image.character = false;
+	image.costume = false;
 
 $(document).ready(function() {
 	var baseUrl = 'https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/images/';
@@ -20,17 +13,18 @@ $(document).ready(function() {
 	$newhotness = $('#newhotness'),
 	$oldbusted = $("#oldbusted"),
 	$character = $('#character'),
-	$costume_btn = $('#toolbar .costume'),
-	$background_btn = $('#toolbar .bg'),
+	$bg = $('#bg'),
 	$costume = $('#costume'),
 	$url = $('#url'),
 	$artboard = $('#artboard'),
 	$highlighter = $('#artboard .highlighter'),
-	$play_all = $('#inspector_spacetime .play_all'),
+	$play_buttons = $('#inspector_spacetime .play button'),
 	$stop = $('#inspector_spacetime .stop'),
 	$canvas = $('#canvas'),
 	$zoom_slide = $('#zoom_slide')
 	$zoom_size = $('.zoom_size');
+	$char_opacity = $('#char_opacity');
+	$char_opacity_size = $('.char_opacity_size');
 
 	c = $canvas[0];
 	c._face = 'left';
@@ -48,22 +42,12 @@ $(document).ready(function() {
 
 	$character.change(function(e) {
 		updateOriginal($(this).val());
-		updateUrl();
 	});
 
-	$costume_btn.click(function(e) {
-		e.preventDefault();
-		$newhotness.toggle();
-		$oldbusted.toggle();
-	});
-
-	var bgtoggle = 0;
-
-	$background_btn.click(function(e) {
-		e.preventDefault();
-		bgtoggle++;
-		$artboard.css('background', bgtoggle % 2 ? '#34c429' : '');
-		$canvas.css('background', bgtoggle % 2 ? '#34c429' : '');
+	$bg.change(function(e) {
+		var state = $bg.prop('checked');
+		$artboard.css('background', state ? '#34c429' : '');
+		$canvas.css('background', state ? '#34c429' : '');
 	});
 
 	$costume.submit(function(e) {
@@ -71,8 +55,7 @@ $(document).ready(function() {
 	})
 
 	$url.on('change', function(e) {
-		updateCostume($(this).val());
-		updateUrl();
+		$costume.submit();
 	});
 
 	$artboard.mousemove(function(e) {
@@ -80,6 +63,7 @@ $(document).ready(function() {
 			c._mouse = true;
 			var loc = get_square_coords(e);
 			c.queue = [ [ loc.X, loc.Y ] ];
+			$artboard.attr('title','[ ' + loc.X + ', ' + loc.Y + ' ]');
 		}
 	});
 
@@ -97,16 +81,26 @@ $(document).ready(function() {
 		$zoom_size.html('x' + z);
 	});
 
-	$play_all.click(function() {
-		for( var y = 0; y <= 14; y++ ) {
-			for( var x = 0; x <= 8; x++ ) {
-				c.queue.push( [ x, y ] );
-			}
-		}
+	$char_opacity.change(function() {
+		z = $char_opacity.val();
+		$char_opacity_size.html(z + '%');
 	});
 
-	$stop.click( function () {
-		c.queue = [];
+	$play_buttons.click(function() {
+		var action = this.id;
+		c._mouse = false;
+		if( action == 'play_all' ) {
+			for( var y = 0; y <= 14; y++ ) {
+				for( var x = 0; x <= 8; x++ ) {
+					c.queue.push( [ x, y ] );
+				}
+			}
+		} else if( action == 'stop' ) {
+			c.queue = [];
+		} else if( action == 'spin' ) {
+			var s = motion.other.spin;
+			c.queue = [].concat(s,s,s,s,s);
+		}
 	});
 
 	init_canvas();
@@ -121,26 +115,6 @@ $(document).ready(function() {
 	$(document).bind('keyup', 'down', stop_running );
 
 });
-
-function updateUrl() {
-	if (window.history && history.pushState) {
-		var character = $character.val();
-		var costume = $url.val();
-
-		var data = ({
-			character: character,
-			costume: costume
-		});
-
-		var url = "/" + character;
-
-		if (costume) {
-			url = url + "/" + encodeURIComponent(costume);
-		}
-
-		history.replaceState(data, window.title, url);
-	}
-}
 
 function updateCostume(url) {
 	if (url) {
@@ -204,11 +178,11 @@ function clear_canvas( c ) {
 }
 
 function render_image( _arr ) {
-	if( big_image ) {
+	if( image.costume ) {
 		var ctx = c.getContext('2d');
 		ctx.clearRect( 0, 0, c.width, c.height );
 		ctx.drawImage(
-			big_image, // image
+			image.costume, // image
 			_arr[0] * 480, // source offset X ( left )
 			_arr[1] * 480,// source offset Y ( top )
 			480, // source width
@@ -233,6 +207,8 @@ function update() {
 }
 
 function draw() {
+	if( c._mouse == 'lock' ) $highlighter.css({background: '#f00'});
+	else $highlighter.css({background: ''});
 	if( c.queue.length ) {
 		var o = c.queue.shift();
 		$highlighter.show();
@@ -248,7 +224,7 @@ function init_canvas() {
 	show_spinner( c );
 	var img = new Image();
 	img.onload = function() {
-		big_image = img;
+		image.costume = img;
 		clear_canvas( c );
 		render_image( [ 0, 0 ] );
 	};

@@ -4,6 +4,8 @@
 		<title>Journey to the Center of Hawkthorne Costume Tester</title>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='jquery.hotkeys.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='html5slider.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='motion.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
 		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 		<link href='http://fonts.googleapis.com/css?family=Bitter&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
@@ -27,8 +29,6 @@
 						<input type="text" id="url" name="url" value="{{source}}" />
 					</div>
 					<div id="toolbar">
-						<button class="costume">Toggle Costume</button>
-						<button class="bg">Toggle Background</button>
 						<div class="submit">
 							<a href="http://www.reddit.com/r/hawkthorne/submit" onclick="this.href += '?url=' + encodeURIComponent(window.location);">
 								<img src="http://www.reddit.com/static/spreddit11.gif" alt="submit to reddit" border="0" />
@@ -39,14 +39,34 @@
 			</header>
 			<div id="inspector_spacetime">
 				<div class="controls">
-					Inspector Size: <input id="zoom_slide" type="range" min="1" max="10" value="5"/> <span class="zoom_size">x5</span>
+					<fieldset>
+						<label for="zoom_slide">Inspector Size:</label>
+						<input id="zoom_slide" type="range" min="1" max="10" value="5"/>
+						<span class="zoom_size">x5</span>
+					</fieldset>
+					<fieldset class="toggle">
+						<input id="bg" type="checkbox" />
+						<label for="bg">Background:</label>
+						<span class="toggle-button"></span>
+					</fieldset>
+					<fieldset class="toggle">
+						<input id="char" type="checkbox" />
+						<label for="char">Character Overlay:</label>
+						<span class="toggle-button"></span>
+					</fieldset>
+					<fieldset>
+						<label for="char_opacity">Character Overlay Opacity:</label>
+						<input id="char_opacity" type="range" step="1" min="1" max="100" value="100"/>
+						<span class="char_opacity_size">100%</span>
+					</fieldset>
 				</div>
 				<div class="canvas_holder">
 					<canvas id="canvas" width="480" height="480" style="width: 240px; height: 240px;"></canvas>
 				</div>
-				<div class="controls">
-					<button class="play_all">Play All</button>
-					<button class="stop">Stop</button>
+				<div class="controls play">
+					<button id="play_all">Play All</button>
+					<button id="stop">Stop</button>
+					<button id="spin">Spin</button>
 					Use the arrow keys to move around
 				</div>
 			</div>
