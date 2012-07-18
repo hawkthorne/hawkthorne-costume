@@ -35,7 +35,19 @@
         </div>
       </div></form>
     </header>
+	<div id="inspector_spacetime">
+		<div class="controls">
+			Inspector Size: <input id="zoom_slide" type="range" min="1" max="10" value="5"/> <span class="zoom_size">x5</span>
+		</div>
+		<div class="canvas_holder">
+			<canvas id="canvas" width="480" height="480" style="width: 240px; height: 240px;"></canvas>
+		</div>
+		<div class="controls">
+			<button class="play">Play All</button>
+		</div>
+	</div>
     <div id="artboard">
+		<div class="highlighter"></div>
       {% if source %}
         <img style="display:none;" id="oldbusted" src="{{original}}" />
         <img id="newhotness" src="{{source}}" />

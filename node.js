@@ -2,9 +2,11 @@
  * Module dependencies.
  */
 
-var express = require('express')
-  , _ = require('lodash')
-  , jinjs = require('jinjs');
+var express = require('express'),
+	jinjs = require('jinjs'),
+	gm = require('gm'),
+	imageMagick = gm.subClass({ imageMagick: true }),
+	request = require('request');
 
 // start the app
 var app = module.exports = express.createServer();
@@ -34,6 +36,24 @@ app.configure('production', function(){
 });
 
 // Routes
+app.get('/big/:path', function (req, res, next) {
+	var path = decodeURIComponent( req.params.path ) || false;
+	if( path.match( /^https?:\/\// ) ) {
+		imageMagick( path )
+			.quality(100)
+			.antialias(false)
+			.size( function( err, value ) {
+				this.scale( value.width * 10, value.height * 10 );
+				this.stream(function (err, stdout, stderr) {
+					if (err) return next(err);
+					res.setHeader('Expires', new Date(Date.now() + 604800000));
+					stdout.pipe( res );
+				});
+			});
+	} else {
+		res.send( "LOL whut?", 404 );
+	}
+});
 
 app.get('/:character/:in_url?', function(req, res) {
 
