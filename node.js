@@ -38,6 +38,7 @@ app.configure('production', function(){
 // Routes
 app.get('/big/:path', function (req, res, next) {
 	var path = decodeURIComponent( req.params.path ) || false;
+	console.log( 'about to get ' + path );
 	if( path.match( /^https?:\/\// ) ) {
 		imageMagick( path )
 			.quality(100)
