@@ -43,15 +43,22 @@ app.get('/big/:path', function (req, res, next) {
 			.quality(100)
 			.antialias(false)
 			.size( function( err, value ) {
-				this.scale( value.width * 10, value.height * 10 );
-				this.stream(function (err, stdout, stderr) {
-					if (err) return next(err);
-					res.setHeader('Expires', new Date(Date.now() + 604800000));
-					stdout.pipe( res );
-				});
+				if( err ) {
+					res.json(err,404);
+				} else {
+					this.scale( value.width * 10, value.height * 10 );
+					this.stream(function (err, stdout, stderr) {
+						if (err) {
+							res.json(err,404);
+						} else {
+							res.setHeader('Expires', new Date(Date.now() + 604800000));
+							stdout.pipe( res );
+						}
+					});
+				}
 			});
 	} else {
-		res.send( "LOL whut?", 404 );
+		res.json( "LOL whut?", 404 );
 	}
 });
 
