@@ -1,21 +1,23 @@
-var baseUrl = 'https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/images/';
+var _char = false,
+	_animation = false;
 
-var $newhotness, $oldbusted, $character, $bg,
-	$costume, $url, $artboard, $highlighter, $play_buttons,
-	$canvas, c, $zoom_slide, $zoom_size, $char_opacity, $char_opacity_size;
+var $form, $newhotness, $oldbusted, $character, $bg,
+	$url, $artboard, $highlighter, $play_buttons, $stop,
+	$canvas, c, $zoom_slide, $zoom_size, $char_toggle, $char_opacity, $char_opacity_size;
 
-var image = {};
+var costume_specified,
+	image = {};
 	image.character = false;
 	image.costume = false;
 
 $(document).ready(function() {
 
 	// jQuery vars
+	$form = $('#form'),
 	$newhotness = $('#newhotness'),
 	$oldbusted = $("#oldbusted"),
 	$character = $('#character'),
 	$bg = $('#bg'),
-	$costume = $('#costume'),
 	$url = $('#url'),
 	$artboard = $('#artboard'),
 	$highlighter = $('#artboard .highlighter'),
@@ -24,45 +26,46 @@ $(document).ready(function() {
 	$canvas = $('#canvas'),
 	$zoom_slide = $('#zoom_slide')
 	$zoom_size = $('.zoom_size');
+	$char_toggle = $('#char');
 	$char_opacity = $('#char_opacity');
 	$char_opacity_size = $('.char_opacity_size');
 
+	// start loading the character lua asap
+	$.getJSON(
+		'/lua/' + $character.val(),
+		function(data, textStatus, jqXHR) {
+			_char = data.data;
+			_animation = data.data.animations;
+			costumes = _char.costumes;
+			costumes.shift();
+			for( var i in costumes ) {
+				var cost_url = encodeURIComponent( 'https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/' + _char.costumes[i].sheet );
+				$('#in_game_costumes').append(
+					$('<a href="/' + _char.name + '/' + cost_url + '">' + _char.costumes[i].name + '</a>')
+				);
+			}
+		}
+	);
+
 	c = $canvas[0];
-	c._face = 'left';
+	c._face = false;
 	c._dir = false;
+	c._motion = 'stop';
 	c._mouse = false;
+	c._highlighted = [ 0, 0 ];
+
 	// animation queue
 	c._queue = [];
-
-	var fps = 10;
-	setInterval(function() {
-		update();
-		draw();
-	}, 1000 / fps );
-
-	$character.change(function(e) {
-		updateOriginal($(this).val());
-	});
-
-	$bg.change(function(e) {
-		var state = $bg.prop('checked');
-		$artboard.css('background', state ? '#34c429' : '');
-		$canvas.css('background', state ? '#34c429' : '');
-	});
-
-	$costume.submit(function(e) {
-		e.preventDefault();
-	})
-
-	$url.on('change', function(e) {
-		$costume.submit();
-	});
 
 	$artboard.mousemove(function(e) {
 		if( c._mouse != 'lock' ) {
 			c._mouse = true;
 			var loc = get_square_coords(e);
-			c._queue = [ [ loc.X, loc.Y ] ];
+			$highlighter.css( {
+				left: loc.X * 48,
+				top: loc.Y * 48
+			} );
+			c._highlighted = [ loc.X, loc.Y ];
 			$artboard.attr('title','[ ' + loc.X + ', ' + loc.Y + ' ]');
 		}
 	});
@@ -72,8 +75,9 @@ $(document).ready(function() {
 		else c._mouse = true;
 	});
 
+	// Inspector controls
 	$zoom_slide.change(function() {
-		z = $zoom_slide.val();
+		var z = $zoom_slide.val();
 		$canvas.css({
 			"width": ( z * 48 ) + "px",
 			"height": ( z * 48 ) + "px"
@@ -81,50 +85,71 @@ $(document).ready(function() {
 		$zoom_size.html('x' + z);
 	});
 
+	$bg.change(function(e) {
+		var state = $bg.prop('checked');
+		$artboard.css('background', state ? '#34c429' : '');
+		$canvas.css('background', state ? '#34c429' : '');
+	});
+
+	costume_specified = ( $newhotness.attr('src') !== '' );
+
+	if( !costume_specified ) {
+		$oldbusted.show();
+		$char_toggle.prop('checked',true);
+	}
+
+	$char_toggle.change(function() {
+		$oldbusted.toggle();
+	});
+
 	$char_opacity.change(function() {
-		z = $char_opacity.val();
-		$char_opacity_size.html(z + '%');
+		var o = $char_opacity.val();
+		$char_opacity_size.html( o + '%' );
+		$oldbusted.css({'opacity': o / 100});
 	});
 
 	$play_buttons.click(function() {
 		var action = this.id;
 		c._mouse = c._face = c._dir = false;
 		if( action == 'play_all' ) {
-			for( var y = 0; y <= 14; y++ ) {
-				for( var x = 0; x <= 8; x++ ) {
+			y_max = Math.floor($newhotness.height() / 48) - 1;
+			x_max = Math.floor($newhotness.width() / 48) - 1;
+			for( var y = 0; y <= y_max; y++ ) {
+				for( var x = 0; x <= x_max; x++ ) {
 					c._queue.push( [ x, y ] );
 				}
 			}
 		} else if( action == 'stop' ) {
 			c._queue = [];
-		} else if( action == 'spin' ) {
-			var s = motion.other.spin;
-			c._queue = [].concat(s,s,s,s,s);
+		} else if( action == 'warp' ) {
+			c._queue = [].concat( _animation.warp[1] );
 		}
 	});
 
 	init_canvas();
 
-	$(document).bind('keydown', 'left', start_running );
-	$(document).bind('keyup', 'left', stop_running );
-	$(document).bind('keydown', 'right', start_running );
-	$(document).bind('keyup', 'right', stop_running );
-	$(document).bind('keydown', 'up', start_running );
-	$(document).bind('keyup', 'up', stop_running );
-	$(document).bind('keydown', 'down', start_running );
-	$(document).bind('keyup', 'down', stop_running );
+	$(document).bind('keydown', 'left', change_state );
+	$(document).bind('keyup', 'left', change_state );
+	$(document).bind('keydown', 'right', change_state );
+	$(document).bind('keyup', 'right', change_state );
+	$(document).bind('keydown', 'up', change_state );
+	$(document).bind('keyup', 'up', change_state );
+	$(document).bind('keydown', 'down', change_state );
+	$(document).bind('keyup', 'down', change_state );
+
+	// reload on change
+	$character.change(function(e) { $url.val(''); $form.submit(); });
+	$url.change(function(e) { $form.submit(); });
 
 });
 
-function updateOriginal(character) {
-	var imgUrl = baseUrl + character + ".png";
-	$oldbusted.attr('src', imgUrl);
-}
-
 function get_square_coords( e ) {
+	// firefox fix
+	var x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
+	var y = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
 	return {
-		Y: Math.floor(e.offsetY / 48),
-		X: Math.floor(e.offsetX / 48)
+		Y: Math.floor(y / 48),
+		X: Math.floor(x / 48)
 	};
 }
 
@@ -152,42 +177,66 @@ function show_spinner( c ) {
 	init();
 };
 
-function clear_canvas( c ) {
-	var h = c.height,
-		w = c.width,
-		ctx = c.getContext('2d');
-	if( c.spinInterval ) {
-		clearInterval( c.spinInterval );
-		delete c.spinInterval;
+function init_canvas() {
+	show_spinner( c );
+
+	// load the big version of the character first
+	var character = new Image();
+	character.onload = function() {
+		image.character = character;
+		if( !costume_specified ) ready();
+	};
+	character.src = '/big/' + encodeURIComponent( $oldbusted.attr('src') );
+
+	// load the big version of the costume ( if specified )
+	if( costume_specified ) {
+		var costume = new Image();
+		costume.onload = function() {
+			image.costume = costume;
+			ready();
+		};
+		costume.src = '/big/' + encodeURIComponent( $newhotness.attr('src') );
 	}
-	ctx.clearRect(0,0,h,w);
+
+	function ready() {
+		if( c.spinInterval ) {
+			clearInterval( c.spinInterval );
+			delete c.spinInterval;
+		}
+		var ctx = c.getContext('2d');
+		ctx.clearRect(0,0,c.height,c.width);
+		render_image( c._highlighted );
+
+		// starts the animation loop
+		window.onEachFrame( animation_loop );
+
+	}
 }
 
-function render_image( _arr ) {
-	if( image.costume ) {
-		var ctx = c.getContext('2d');
-		ctx.clearRect( 0, 0, c.width, c.height );
-		ctx.drawImage(
-			image.costume, // image
-			_arr[0] * 480, // source offset X ( left )
-			_arr[1] * 480,// source offset Y ( top )
-			480, // source width
-			480, // source height
-			0, // destination offset X ( left )
-			0, // destination offset Y ( top )
-			c.width, // destination width
-			c.height // destination height
-		);
+function change_state( e ) {
+	c._mouse = false;
+	e.preventDefault();
+	if( e.type == 'keydown' ) {
+		if( e.data == 'left' || e.data == 'right' ) {
+			c._dir = e.data;
+			c._motion = 'walk';
+		} else {
+			c._motion = 'stop';
+		}
+	} else {
+		c._face = c._dir;
+		c._motion = 'stop';
 	}
 }
 
 function update() {
 	// handles all inspector movement
 	if( c._mouse == false ) {
-		if( c._dir !== false ) {
-			c._queue.push( motion.run[ c._dir ][ c[ c._dir ]++ % motion.run[ c._dir ].length ] );
+		if( c._motion !== 'stop' ) {
+			var movement = _animation[ c._motion ][ c._dir ][1];
+			c._queue.push( movement[ Math.floor( Math.random() * movement.length ) ] );
 		} else if( c._face !== false ) {
-			c._queue = [ motion.stop[ c._face ].slice(0) ];
+			c._queue = _animation.idle[ c._face ][1];
 		}
 	}
 }
@@ -197,38 +246,78 @@ function draw() {
 	else $highlighter.css({background: ''});
 	if( c._queue.length ) {
 		var o = c._queue.shift();
-		$highlighter.show();
 		$highlighter.css( {
 			left: o[0] * 48,
 			top: o[1] * 48
 		} );
+		c._highlighted = o.slice(0);
 		render_image( o );
+	} else {
+		render_image( c._highlighted );
 	}
 }
 
-function init_canvas() {
-	show_spinner( c );
-	var img = new Image();
-	img.onload = function() {
-		image.costume = img;
-		clear_canvas( c );
-		render_image( [ 0, 0 ] );
-	};
-	img.src = '/big/' + encodeURIComponent( $newhotness.attr('src') );
+function render_image( _pos ) {
+	var ctx = c.getContext('2d'),
+		cleared = false;
+	if( image.character && $char_toggle.prop('checked') ) {
+		ctx.clearRect( 0, 0, c.width, c.height ); cleared = true;
+		var o = $char_opacity.val();
+		ctx.globalAlpha = o / 100;
+		ctx.drawImage(
+			image.character, // image
+			_pos[0] * 480, // source offset X ( left )
+			_pos[1] * 480,// source offset Y ( top )
+			480, // source width
+			480, // source height
+			0, // destination offset X ( left )
+			0, // destination offset Y ( top )
+			c.width, // destination width
+			c.height // destination height
+		);
+		ctx.save();
+	}
+	if( image.costume ) {
+		if( !cleared ) ctx.clearRect( 0, 0, c.width, c.height );
+		ctx.globalAlpha = 1;
+		ctx.drawImage(
+			image.costume, // image
+			_pos[0] * 480, // source offset X ( left )
+			_pos[1] * 480,// source offset Y ( top )
+			480, // source width
+			480, // source height
+			0, // destination offset X ( left )
+			0, // destination offset Y ( top )
+			c.width, // destination width
+			c.height // destination height
+		);
+		ctx.save();
+	}
 }
 
-function start_running( e ) {
-	e.preventDefault();
-	if( c._dir != e.data ) {
-		c._mouse = false;
-		c._dir = e.data;
-		c[ e.data ] = 0;
+function animation_loop() {
+	draw();
+	update();
+};
+
+// animation loop ( courtesy of http://nokarma.org/2011/02/02/javascript-game-development-the-game-loop/index.html )
+(function() {
+	var onEachFrame;
+	if (window.webkitRequestAnimationFrame) {
+		onEachFrame = function(cb) {
+			var _cb = function() { cb(); webkitRequestAnimationFrame(_cb); }
+			_cb();
+		};
+	} else if (window.mozRequestAnimationFrame) {
+		onEachFrame = function(cb) {
+			var _cb = function() { cb(); mozRequestAnimationFrame(_cb); }
+			_cb();
+		};
+	} else {
+		onEachFrame = function(cb) {
+			setInterval(cb, 1000 / 60);
+		}
 	}
-}
-function stop_running( e ) {
-	e.preventDefault();
-	if( c._dir == e.data ) {
-		c._dir = false;
-		c._face = e.data;
-	}
-}
+
+	window.onEachFrame = onEachFrame;
+})();

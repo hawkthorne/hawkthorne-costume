@@ -73,7 +73,8 @@ module.exports = function( req, res ) {
 										new_middle = [];
 									for( var i in parsed ) {
 										if( /^\d*,\d*$/.test( parsed[i] ) ) {
-											new_middle.push( parsed[i] );
+											_p = parsed[i].split(',');
+											new_middle.push( [ _p[0] - 1, _p[1] - 1 ] );
 										} else {
 											var x_min, x_max, y_min, y_max, xy, x, y;
 											xy = parsed[i].split(',');
@@ -85,7 +86,7 @@ module.exports = function( req, res ) {
 											y_max = ( y[ y.length - 1 ] * 1 );
 											for( var _x = x_min; _x <= x_max; _x++ ) {
 												for( var _y = y_min; _y <= y_max; _y++ ) {
-													new_middle.push( _x + ',' + _y );
+													new_middle.push( [ _x - 1 , _y - 1 ] );
 												}
 											}
 										}
@@ -137,7 +138,7 @@ module.exports = function( req, res ) {
 				resp.result = 'invalid request';
 			}
 
-			res.send( '<pre>' + syntaxHighlight( resp ) + '</pre>' );
+			res.json( resp );
 		}
 	);
 

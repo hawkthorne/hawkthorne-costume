@@ -5,7 +5,6 @@
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='jquery.hotkeys.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='html5slider.js') }}"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename='motion.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
 		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 		<link href='http://fonts.googleapis.com/css?family=Bitter&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
@@ -15,7 +14,7 @@
 		<div id="wrapper">
 			<header>
 				<h1>Journey to the Center of Hawkthorne Costume Tester</h1>
-				<form action="" method="post"><div>
+				<form id="form" action="" method="post"><div>
 					<div>
 						<label for="character">Character</label>
 						<select id="character" name="character">
@@ -27,6 +26,10 @@
 					<div>
 						<label for="url">Costume URL</label>
 						<input type="text" id="url" name="url" value="{{source}}" />
+					</div>
+					<div>
+						<label>{{character|title}}'s In-Game Costumes</label>
+						<div id="in_game_costumes"></div>
 					</div>
 					<div id="toolbar">
 						<div class="submit">
@@ -65,20 +68,15 @@
 				</div>
 				<div class="controls play">
 					<button id="play_all">Play All</button>
+					<button id="warp">Warp</button>
 					<button id="stop">Stop</button>
-					<button id="spin">Spin</button>
 					Use the arrow keys to move around
 				</div>
 			</div>
 			<div id="artboard">
 				<div class="highlighter"></div>
-				{% if source %}
-				<img style="display:none;" id="oldbusted" src="{{original}}" />
-				<img id="newhotness" src="{{source}}" />
-				{% else %}
 				<img id="oldbusted" src="{{original}}" />
-				<img style="display:none;"id="newhotness" src="{{source}}" />
-				{% endif %}
+				<img id="newhotness" src="{{source}}" />
 			</div>
 			<section class="faq">
 				<h1>FAQ</h1>
