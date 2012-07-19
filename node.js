@@ -38,7 +38,6 @@ app.configure('production', function(){
 // Routes
 app.get('/big/:path', function (req, res, next) {
 	var path = decodeURIComponent( req.params.path ) || false;
-	console.log( 'about to get ' + path );
 	if( path.match( /^https?:\/\// ) ) {
 		imageMagick( path )
 			.quality(100)
@@ -93,7 +92,7 @@ app.post('/*', function( req, res ) {
 	res.redirect( url );
 });
 
-app.get('*', function( req,res ) { res.end(404); } );
+app.get('*', function( req,res ) { res.send(404); } );
 
 app.dynamicHelpers({
 	url_for: function() { return function( dir, filename ) { return '/' + dir + '/' + filename; }; }
