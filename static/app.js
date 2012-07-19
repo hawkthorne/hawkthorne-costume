@@ -110,19 +110,25 @@ $(document).ready(function() {
 
 	$play_buttons.click(function() {
 		var action = this.id;
-		c._mouse = c._face = c._dir = false;
+		c._mouse = false;
+		c._face = false;
+		c._dir = false;
 		if( action == 'play_all' ) {
 			y_max = Math.floor($newhotness.height() / 48) - 1;
 			x_max = Math.floor($newhotness.width() / 48) - 1;
 			for( var y = 0; y <= y_max; y++ ) {
 				for( var x = 0; x <= x_max; x++ ) {
+					// FIX THIS!!! <-- TIMING ALGORITHM NEEDED!!!
+					c._queue.push( [ x, y ] );
+					c._queue.push( [ x, y ] );
+					c._queue.push( [ x, y ] );
+					c._queue.push( [ x, y ] );
+					c._queue.push( [ x, y ] );
 					c._queue.push( [ x, y ] );
 				}
 			}
 		} else if( action == 'stop' ) {
 			c._queue = [];
-		} else if( action == 'warp' ) {
-			c._queue = [].concat( _animation.warp[1] );
 		}
 	});
 
@@ -236,7 +242,7 @@ function update() {
 			var movement = _animation[ c._motion ][ c._dir ][1];
 			c._queue.push( movement[ Math.floor( Math.random() * movement.length ) ] );
 		} else if( c._face !== false ) {
-			c._queue = _animation.idle[ c._face ][1];
+			c._queue.push( _animation.idle[ c._face ][1][0] );
 		}
 	}
 }
@@ -244,7 +250,7 @@ function update() {
 function draw() {
 	if( c._mouse == 'lock' ) $highlighter.css({background: '#f00'});
 	else $highlighter.css({background: ''});
-	if( c._queue.length ) {
+	if( c._queue.length > 0 ) {
 		var o = c._queue.shift();
 		$highlighter.css( {
 			left: o[0] * 48,
