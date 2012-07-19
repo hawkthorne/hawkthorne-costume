@@ -99,6 +99,7 @@ margin-bottom: 5px;
 
 #in_game_costumes {
 	display: inline-block;
+	width: 77%;
 }
 #in_game_costumes a {
 	font-size: 13px;
