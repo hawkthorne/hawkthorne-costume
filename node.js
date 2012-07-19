@@ -6,7 +6,7 @@ var express = require('express'),
 	jinjs = require('jinjs'),
 	gm = require('gm'),
 	imageMagick = gm.subClass({ imageMagick: true }),
-	request = require('request');
+	lua = require('./luaparser');
 
 // start the app
 var app = module.exports = express.createServer();
@@ -55,6 +55,8 @@ app.get('/big/:path', function (req, res, next) {
 	}
 });
 
+app.get('/lua/:character', lua);
+
 app.get('/:character/:in_url?', function(req, res) {
 
 	var character = req.params.character;
@@ -82,13 +84,15 @@ app.get('/', function( req, res ) {
 	res.redirect('/abed');
 });
 
-app.post('/', function( req, res ) {
+app.post('/*', function( req, res ) {
 	var character = req.body.character || 'abed',
 		costume = req.body.url || false,
 		url = '/' + character;
 	if( costume ) url += '/' + encodeURIComponent( costume );
 	res.redirect( url );
 });
+
+app.get('*', function( req,res ) { res.end(404); } );
 
 app.dynamicHelpers({
 	url_for: function() { return function( dir, filename ) { return '/' + dir + '/' + filename; }; }

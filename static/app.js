@@ -1,3 +1,5 @@
+var baseUrl = 'https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/images/';
+
 var $newhotness, $oldbusted, $character, $bg,
 	$costume, $url, $artboard, $highlighter, $play_buttons,
 	$canvas, c, $zoom_slide, $zoom_size, $char_opacity, $char_opacity_size;
@@ -7,7 +9,6 @@ var image = {};
 	image.costume = false;
 
 $(document).ready(function() {
-	var baseUrl = 'https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/images/';
 
 	// jQuery vars
 	$newhotness = $('#newhotness'),
@@ -30,15 +31,14 @@ $(document).ready(function() {
 	c._face = 'left';
 	c._dir = false;
 	c._mouse = false;
+	// animation queue
+	c._queue = [];
 
 	var fps = 10;
 	setInterval(function() {
 		update();
 		draw();
 	}, 1000 / fps );
-
-	// animation queue
-	c.queue = [];
 
 	$character.change(function(e) {
 		updateOriginal($(this).val());
@@ -62,7 +62,7 @@ $(document).ready(function() {
 		if( c._mouse != 'lock' ) {
 			c._mouse = true;
 			var loc = get_square_coords(e);
-			c.queue = [ [ loc.X, loc.Y ] ];
+			c._queue = [ [ loc.X, loc.Y ] ];
 			$artboard.attr('title','[ ' + loc.X + ', ' + loc.Y + ' ]');
 		}
 	});
@@ -88,18 +88,18 @@ $(document).ready(function() {
 
 	$play_buttons.click(function() {
 		var action = this.id;
-		c._mouse = false;
+		c._mouse = c._face = c._dir = false;
 		if( action == 'play_all' ) {
 			for( var y = 0; y <= 14; y++ ) {
 				for( var x = 0; x <= 8; x++ ) {
-					c.queue.push( [ x, y ] );
+					c._queue.push( [ x, y ] );
 				}
 			}
 		} else if( action == 'stop' ) {
-			c.queue = [];
+			c._queue = [];
 		} else if( action == 'spin' ) {
 			var s = motion.other.spin;
-			c.queue = [].concat(s,s,s,s,s);
+			c._queue = [].concat(s,s,s,s,s);
 		}
 	});
 
@@ -115,20 +115,6 @@ $(document).ready(function() {
 	$(document).bind('keyup', 'down', stop_running );
 
 });
-
-function updateCostume(url) {
-	if (url) {
-		$newhotness
-			.attr('src', url)
-			.show();
-		$oldbusted.hide();
-	} else {
-		$newhotness
-			.hide()
-			.attr('src', '');
-		$oldbusted.show();
-	}
-}
 
 function updateOriginal(character) {
 	var imgUrl = baseUrl + character + ".png";
@@ -197,11 +183,11 @@ function render_image( _arr ) {
 
 function update() {
 	// handles all inspector movement
-	if( !c._mouse ) {
+	if( c._mouse == false ) {
 		if( c._dir !== false ) {
-			c.queue.push( motion.run[ c._dir ][ c[ c._dir ]++ % motion.run[ c._dir ].length ] );
-		} else {
-			c.queue = [ motion.stop[ c._face ] ];
+			c._queue.push( motion.run[ c._dir ][ c[ c._dir ]++ % motion.run[ c._dir ].length ] );
+		} else if( c._face !== false ) {
+			c._queue = [ motion.stop[ c._face ].slice(0) ];
 		}
 	}
 }
@@ -209,8 +195,8 @@ function update() {
 function draw() {
 	if( c._mouse == 'lock' ) $highlighter.css({background: '#f00'});
 	else $highlighter.css({background: ''});
-	if( c.queue.length ) {
-		var o = c.queue.shift();
+	if( c._queue.length ) {
+		var o = c._queue.shift();
 		$highlighter.show();
 		$highlighter.css( {
 			left: o[0] * 48,
