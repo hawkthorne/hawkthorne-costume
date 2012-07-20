@@ -39,6 +39,8 @@ app.configure('production', function(){
   app.use(express.errorHandler());
 });
 
+app.get('/favicon.ico', function (req,res,next) { res.redirect('/static/favicon.ico'); } );
+
 // Routes
 app.get('/big/:path', function (req, res, next) {
 	var _path = decodeURIComponent( req.params.path ) || false;
