@@ -43,12 +43,12 @@ app.get('/big/:path', function (req, res, next) {
 			.quality(100)
 			.antialias(false)
 			.size( function( err, value ) {
+				console.log(value);
 				if( err ) {
 					res.json(err,404);
 				} else {
 					this.scale( value.width * 10, value.height * 10 );
 					this.stream(function (err, stdout, stderr) {
-						console.log(stderr);
 						if (err) {
 							res.json(err,404);
 						// } else if (stderr) {
