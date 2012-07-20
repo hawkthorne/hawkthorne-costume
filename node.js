@@ -45,7 +45,7 @@ app.get('/big/:path', function (req, res, next) {
 	if( _path.match( /^https?:\/\// ) ) {
 		var md5 = crypto.createHash('md5').update(_path).digest('hex'),
 			ext = _path.substr(_path.lastIndexOf('.') + 1),
-			cached_file = 'static/cache/' + md5 + '.' + ext;
+			cached_file = 'static/cache/' + md5 + '.' + ext,
 			_cached_file = 'static/cache/_' + md5 + '.' + ext;
 		if( path.existsSync( cached_file ) ) {
 			console.log(' found ' + cached_file );
@@ -57,7 +57,7 @@ app.get('/big/:path', function (req, res, next) {
 			console.log(' downloading little version of ' + _path );
 			request( _path ).pipe( littleStream );
 			littleStream.on('close',function() {
-				console.log(' starting imageMagick on local copy ');
+				console.log(' starting imageMagick on local copy ' + _cached_file);
 				imageMagick( _cached_file )
 					.quality(100)
 					.antialias(false)
