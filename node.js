@@ -59,6 +59,7 @@ app.get('/big/:path', function (req, res, next) {
 					} else {
 						this.scale( value.width * 10, value.height * 10 );
 						this.stream(function (err, stdout, stderr) {
+							stderr.setEncoding('utf8');
 							stderr.on('data',function(data){console.log('stderr',data)});
 							if (err) {
 								res.json(err,404);
