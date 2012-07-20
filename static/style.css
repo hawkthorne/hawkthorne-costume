@@ -141,6 +141,9 @@ button, #toolbar .submit {
 	position: absolute;
 	z-index: 2;
 }
+#artboard.nonew #oldbusted {
+	position: relative;
+}
 
 #inspector_spacetime {
 	float: left;
