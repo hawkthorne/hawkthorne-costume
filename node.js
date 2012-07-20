@@ -5,7 +5,7 @@
 var express = require('express'),
 	jinjs = require('jinjs'),
 	gm = require('gm'),
-	imageMagick = gm.subClass({ imageMagick: true }),
+	//imageMagick = gm.subClass({ imageMagick: true }),
 	lua = require('./luaparser'),
 	path = require('path'),
 	crypto = require('crypto'),
@@ -50,7 +50,7 @@ app.get('/big/:path', function (req, res, next) {
 		    res.redirect( '/' + cached_file );
 		} else {
 			console.log(' didnt find ' + cached_file );
-			imageMagick( _path )
+			gm( _path )
 				.quality(100)
 				.antialias(false)
 				.size( function( err, value ) {
@@ -67,7 +67,6 @@ app.get('/big/:path', function (req, res, next) {
 							    var writeStream = fs.createWriteStream( cached_file );
 								stdout.pipe( writeStream );
 								stdout.on('end', function() {
-									console.log(stdout);
 									console.log(' writing ' + cached_file + ' to cache ');
 									res.redirect( '/' + cached_file );
 								});
