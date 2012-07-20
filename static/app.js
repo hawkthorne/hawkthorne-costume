@@ -4,7 +4,8 @@ var _char = false,
 
 var $form, $newhotness, $oldbusted, $character, $bg,
 	$url, $artboard, $highlighter, $play_buttons, $stop,
-	$canvas, c, $zoom_slide, $zoom_size, $char_toggle, $char_opacity, $char_opacity_size;
+	$canvas, c, $zoom_slide, $zoom_size, $char_toggle,
+	$char_opacity, $char_opacity_size;
 
 var costume_specified,
 	image = {};
@@ -129,14 +130,25 @@ $(document).ready(function() {
 
 	init_canvas();
 
-	$(document).bind('keydown', 'left', change_state );
-	$(document).bind('keyup', 'left', change_state );
-	$(document).bind('keydown', 'right', change_state );
-	$(document).bind('keyup', 'right', change_state );
-	$(document).bind('keydown', 'up', change_state );
-	$(document).bind('keyup', 'up', change_state );
-	$(document).bind('keydown', 'down', change_state );
-	$(document).bind('keyup', 'down', change_state );
+	var supported_keys = [
+		'shift',
+		'shift+left',
+		'alt+left',
+		'left',
+		'shift+right',
+		'alt+right',
+		'right',
+		'alt+up',
+		'up',
+		'alt+down',
+		'down',
+		'space',
+		'x'
+	];
+	for( var i in supported_keys ) {
+		$(document).bind('keydown', supported_keys[i], change_state );
+		$(document).bind('keyup', supported_keys[i], change_state );
+	}
 
 	// reload on change
 	$character.change(function(e) { $url.val(''); $form.submit(); });
@@ -218,7 +230,20 @@ function change_state( e ) {
 	c._mouse = false;
 	e.preventDefault();
 	if( e.type == 'keydown' ) {
-		if( e.data == 'left' || e.data == 'right' ) {
+		if( e.data == 'space' ) 		{ c._motion = 'jump'; }
+		else if( e.data == 'alt+up' )	{ c._motion = 'gazewalk'; }
+		else if( e.data == 'up' ) 		{ c._motion = 'gaze'; }
+		else if( e.data == 'alt+down' ){ c._motion = 'crouchwalk'; }
+		else if( e.data == 'down' ) 	{ c._motion = 'crouch'; }
+		else if( e.data == 'x' ) 		{ c._motion = 'dead'; }
+		else if( e.data == 'shift' ) 	{ c._motion = 'hold'; }
+		else if( e.data == 'shift+left' || e.data == 'shift+right' ) {
+			c._dir = (e.data.split('+'))[1];
+			c._motion = 'holdwalk';
+		} else if( e.data == 'alt+left' || e.data == 'alt+right' ) {
+			c._dir = (e.data.split('+'))[1];
+			c._motion = 'walk';
+		} else if( e.data == 'left' || e.data == 'right' ) {
 			c._dir = e.data;
 			c._motion = 'walk';
 		} else {
@@ -234,9 +259,11 @@ function update() {
 	// handles all inspector movement
 	if( c._mouse == false ) {
 		if( c._motion !== 'stop' ) {
-			if( !_animation[ c._motion ][ c._dir ]._step ) _animation[ c._motion ][ c._dir ]._step = 0;
-			var movement = _animation[ c._motion ][ c._dir ][1];
-			c._queue.push( movement[ _animation[ c._motion ][ c._dir ]._step++ % movement.length ] );
+			var _m = _animation[ c._motion ][ c._dir ];
+			if( _m ) {
+				if( !_m._step ) _m._step = 0;
+				c._queue.push( _m[1][ _m._step++ % _m[1].length ] );
+			}
 		} else if( c._face !== false ) {
 			c._queue.push( _animation.idle[ c._face ][1][0] );
 		}

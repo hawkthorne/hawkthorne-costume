@@ -152,6 +152,10 @@ button, #toolbar .submit {
 	background: #fff;
 	padding: 5px;
 }
+#inspector_spacetime .controls.play {
+	line-height: 25px;
+	padding: 15px;
+}
 
 #inspector_spacetime .controls > * {
 	margin: 9px;
