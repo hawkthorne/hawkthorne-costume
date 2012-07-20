@@ -28,3 +28,4 @@ pip-log.txt
 
 #Node.js
 node_modules
+static/cache/*.*

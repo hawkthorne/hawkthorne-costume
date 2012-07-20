@@ -6,7 +6,10 @@ var express = require('express'),
 	jinjs = require('jinjs'),
 	gm = require('gm'),
 	imageMagick = gm.subClass({ imageMagick: true }),
-	lua = require('./luaparser');
+	lua = require('./luaparser'),
+	path = require('path'),
+	crypto = require('crypto'),
+	fs = require('fs');
 
 // start the app
 var app = module.exports = express.createServer();
@@ -37,29 +40,40 @@ app.configure('production', function(){
 
 // Routes
 app.get('/big/:path', function (req, res, next) {
-	var path = decodeURIComponent( req.params.path ) || false;
-	if( path.match( /^https?:\/\// ) ) {
-		imageMagick( path )
-			.quality(100)
-			.antialias(false)
-			.size( function( err, value ) {
-				console.log(value);
-				if( err ) {
-					res.json(err,404);
-				} else {
-					this.scale( value.width * 10, value.height * 10 );
-					this.stream(function (err, stdout, stderr) {
-						if (err) {
-							res.json(err,404);
-						// } else if (stderr) {
-						// 	res.json(stderr,404);
-						} else {
-							res.setHeader('Expires', new Date(Date.now() + 604800000));
-							stdout.pipe( res );
-						}
-					});
+	var _path = decodeURIComponent( req.params.path ) || false;
+	if( _path.match( /^https?:\/\// ) ) {
+		var md5 = crypto.createHash('md5').update(_path).digest('hex'),
+			ext = _path.substr(_path.lastIndexOf('.') + 1),
+			cached_file = 'static/cache/' + md5 + '.' + ext;
+		if( path.existsSync( cached_file ) ) {
+			console.log(' found ' + cached_file );
+		    res.redirect( '/' + cached_file );
+		} else {
+			console.log(' didnt find ' + cached_file );
+			imageMagick( _path )
+				.quality(100)
+				.antialias(false)
+				.size( function( err, value ) {
+					if( err ) {
+						res.json(err,404);
+					} else {
+						this.scale( value.width * 10, value.height * 10 );
+						this.stream(function (err, stdout, stderr) {
+							if (err) {
+								res.json(err,404);
+							} else {
+							    var writeStream = fs.createWriteStream( cached_file );
+								stdout.pipe( writeStream );
+								stdout.on('end', function() {
+									console.log(' writing ' + cached_file + ' to cache ');
+									res.redirect( '/' + cached_file );
+								});
+							}
+						});
+					}
 				}
-			});
+			);
+		}
 	} else {
 		res.json( "LOL whut?", 404 );
 	}
