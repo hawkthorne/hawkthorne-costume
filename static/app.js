@@ -1,5 +1,6 @@
 var _char = false,
-	_animation = false;
+	_animation = false,
+	_FPS = 10;
 
 var $form, $newhotness, $oldbusted, $character, $bg,
 	$url, $artboard, $highlighter, $play_buttons, $stop,
@@ -114,16 +115,10 @@ $(document).ready(function() {
 		c._face = false;
 		c._dir = false;
 		if( action == 'play_all' ) {
-			y_max = Math.floor($newhotness.height() / 48) - 1;
-			x_max = Math.floor($newhotness.width() / 48) - 1;
+			y_max = Math.floor($oldbusted.height() / 48) - 1;
+			x_max = Math.floor($oldbusted.width() / 48) - 1;
 			for( var y = 0; y <= y_max; y++ ) {
 				for( var x = 0; x <= x_max; x++ ) {
-					// FIX THIS!!! <-- TIMING ALGORITHM NEEDED!!!
-					c._queue.push( [ x, y ] );
-					c._queue.push( [ x, y ] );
-					c._queue.push( [ x, y ] );
-					c._queue.push( [ x, y ] );
-					c._queue.push( [ x, y ] );
 					c._queue.push( [ x, y ] );
 				}
 			}
@@ -239,27 +234,31 @@ function update() {
 	// handles all inspector movement
 	if( c._mouse == false ) {
 		if( c._motion !== 'stop' ) {
+			if( !_animation[ c._motion ][ c._dir ]._step ) _animation[ c._motion ][ c._dir ]._step = 0;
 			var movement = _animation[ c._motion ][ c._dir ][1];
-			c._queue.push( movement[ Math.floor( Math.random() * movement.length ) ] );
+			c._queue.push( movement[ _animation[ c._motion ][ c._dir ]._step++ % movement.length ] );
 		} else if( c._face !== false ) {
 			c._queue.push( _animation.idle[ c._face ][1][0] );
 		}
+	}
+	if( c._queue.length > 0 ) {
+		var o = c._queue.shift();
+		c._next_frame = o;
+	} else {
+		c._next_frame = c._highlighted;
 	}
 }
 
 function draw() {
 	if( c._mouse == 'lock' ) $highlighter.css({background: '#f00'});
 	else $highlighter.css({background: ''});
-	if( c._queue.length > 0 ) {
-		var o = c._queue.shift();
+	if( c._next_frame ) {
 		$highlighter.css( {
-			left: o[0] * 48,
-			top: o[1] * 48
+			left: c._next_frame[0] * 48,
+			top: c._next_frame[1] * 48
 		} );
-		c._highlighted = o.slice(0);
-		render_image( o );
-	} else {
-		render_image( c._highlighted );
+		c._highlighted = c._next_frame.slice(0);
+		render_image( c._next_frame );
 	}
 }
 
@@ -301,10 +300,24 @@ function render_image( _pos ) {
 	}
 }
 
-function animation_loop() {
-	draw();
-	update();
-};
+var animation_loop = (function() {
+	var loops = 0,
+		skipTicks = 1000 / _FPS,
+		maxFrameSkip = 10,
+		nextGameTick = (new Date).getTime();
+
+	return function() {
+		loops = 0;
+
+		while ((new Date).getTime() > nextGameTick && loops < maxFrameSkip) {
+			update();
+			nextGameTick += skipTicks;
+			loops++;
+		}
+
+		draw();
+	};
+})();
 
 // animation loop ( courtesy of http://nokarma.org/2011/02/02/javascript-game-development-the-game-loop/index.html )
 (function() {
@@ -321,7 +334,7 @@ function animation_loop() {
 		};
 	} else {
 		onEachFrame = function(cb) {
-			setInterval(cb, 1000 / 60);
+			setInterval(cb, 1000 / _FPS);
 		}
 	}
 
