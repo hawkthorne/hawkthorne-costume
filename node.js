@@ -57,7 +57,7 @@ app.get('/big/:path', function (req, res, next) {
 					if( err ) {
 						res.json(err,404);
 					} else {
-						this.scale( value.width * 10, value.height * 10 );
+						this.scale( value.width * 5, value.height * 5 );
 						this.stream(function (err, stdout, stderr) {
 							if (err) {
 								res.json(err,404);
