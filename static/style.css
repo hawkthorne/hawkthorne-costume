@@ -92,11 +92,6 @@ font-family: 'Bitter', serif;
 margin-bottom: 5px;
 }
 
-#oldbusted,
-#oldbusted_big {
-	display: none;
-}
-
 #in_game_costumes {
 	display: inline-block;
 	width: 77%;
@@ -140,6 +135,11 @@ button, #toolbar .submit {
 	position: relative;
 	z-index: 1;
 	cursor: pointer;
+}
+#artboard #oldbusted {
+	display: none;
+	position: absolute;
+	z-index: 2;
 }
 
 #inspector_spacetime {
