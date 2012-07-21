@@ -132,7 +132,7 @@ $(document).ready(function() {
 		c._dir = false;
 		if( action == 'play_all' ) {
 			for_each_tile( function(x,y) {
-				c_queue.push( [ x, y ] );
+				c._queue.push( [ x, y ] );
 			});
 		} else if( action == 'stop' ) {
 			c._queue = [];
