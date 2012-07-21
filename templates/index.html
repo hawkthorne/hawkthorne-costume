@@ -79,7 +79,7 @@
 					Die: [x]
 				</div>
 			</div>
-			<div id="artboard" class="{% if source == '' %}nonew{% endif %}">
+			<div id="artboard" class="{% if source != '' %}new{% endif %}">
 				<div class="highlighter"></div>
 				<img id="oldbusted" src="{{original}}" />
 				<img id="newhotness" src="{{source}}" />

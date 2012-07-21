@@ -137,12 +137,11 @@ button, #toolbar .submit {
 	cursor: pointer;
 }
 #artboard #oldbusted {
-	display: none;
-	position: absolute;
 	z-index: 2;
 }
-#artboard.nonew #oldbusted {
-	position: relative;
+#artboard.new #oldbusted {
+	position: absolute;
+	display: none;
 }
 
 #inspector_spacetime {

@@ -45,6 +45,22 @@ $(document).ready(function() {
 				$('#in_game_costumes').append(
 					$('<a href="/' + _char.name + '/' + cost_url + '">' + _char.costumes[i].name + '</a>')
 				);
+				// create a catalogue of known animation frames
+				c._catalogue = [];
+				for_each_tile( function( x, y ) {
+					if( c._catalogue[ x ] == undefined ) c._catalogue[ x ] = [];
+					if( c._catalogue[ x ][ y ] == undefined ) c._catalogue[ x ][ y ] = [];
+				});
+				for( var motion in _animation ) {
+					for( var direction in _animation[ motion ] ) {
+						for( var frame in _animation[ motion ][ direction ][ 1 ] ) {
+							var set = _animation[ motion ][ direction ][ 1 ];
+							if( set[ frame ] instanceof Array && set[ frame ].length == 2 ) {
+								c._catalogue[ set[ frame ][0] ][ set[ frame ][1] ].push( "\n  " + motion + ' : ' + direction + "  " );
+							}
+						}
+					}
+				}
 			}
 		}
 	);
@@ -68,7 +84,11 @@ $(document).ready(function() {
 				top: loc.Y * 48
 			} );
 			c._highlighted = [ loc.X, loc.Y ];
-			$artboard.attr('title','[ ' + loc.X + ', ' + loc.Y + ' ]');
+			$artboard.attr(
+				'title',
+				  '[ ' + ( loc.X + 1 ) + ', ' + ( loc.Y + 1 ) + ' ]' // tile position
+				+ c._catalogue[ loc.X ][ loc.Y ].join('') // associated positions
+			);
 		}
 	});
 
@@ -94,9 +114,7 @@ $(document).ready(function() {
 	});
 
 	costume_specified = ( $newhotness.attr('src') !== '' );
-
 	if( !costume_specified ) {
-		$oldbusted.show();
 		$char_toggle.prop('checked',true);
 	}
 
@@ -116,13 +134,9 @@ $(document).ready(function() {
 		c._face = false;
 		c._dir = false;
 		if( action == 'play_all' ) {
-			y_max = Math.floor($oldbusted.height() / 48) - 1;
-			x_max = Math.floor($oldbusted.width() / 48) - 1;
-			for( var y = 0; y <= y_max; y++ ) {
-				for( var x = 0; x <= x_max; x++ ) {
-					c._queue.push( [ x, y ] );
-				}
-			}
+			for_each_tile( function(x,y) {
+				c_queue.push( [ x, y ] );
+			});
 		} else if( action == 'stop' ) {
 			c._queue = [];
 		}
@@ -155,6 +169,16 @@ $(document).ready(function() {
 	$url.change(function(e) { $form.submit(); });
 
 });
+
+function for_each_tile( func ) {
+	y_max = Math.floor($oldbusted.height() / 48) - 1;
+	x_max = Math.floor($oldbusted.width() / 48) - 1;
+	for( var y = 0; y <= y_max; y++ ) {
+		for( var x = 0; x <= x_max; x++ ) {
+			func( x , y );
+		}
+	}
+}
 
 function get_square_coords( e ) {
 	// firefox fix
