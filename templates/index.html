@@ -82,7 +82,9 @@
 			<div id="artboard" class="{% if source != '' %}new{% endif %}">
 				<div class="highlighter"></div>
 				<img id="oldbusted" src="{{original}}" />
-				<img id="newhotness" src="{{source}}" />
+				{% if source != '' %}
+					<img id="newhotness" src="{{source}}" />
+				{% endif %}
 			</div>
 			<section class="faq">
 				<h1>FAQ</h1>
