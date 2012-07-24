@@ -261,7 +261,7 @@ function init_canvas() {
 
 function update() {
 	// handles all inspector movement
-	if( c._mouse == false ) {
+	if( c._mouse == false && _animation ) {
 		// check for key presses
 		if( keydown.state ) {
 			// simples have to go at the bottom!
@@ -292,10 +292,12 @@ function update() {
 		}
 		// now be somebody!!!
 		if( c._motion !== 'stop' ) {
-			var _m = _animation[ c._motion ][ c._dir ];
-			if( _m ) {
-				if( !_m._step ) _m._step = 0;
-				c._queue.push( _m[1][ _m._step++ % _m[1].length ] );
+			if( _animation[ c._motion ] ) {
+				var _m = _animation[ c._motion ][ c._dir ];
+				if( _m ) {
+					if( !_m._step ) _m._step = 0;
+					c._queue.push( _m[1][ _m._step++ % _m[1].length ] );
+				}
 			}
 		} else if( c._face !== false ) {
 			c._queue.push( _animation.idle[ c._face ][1][0] );
