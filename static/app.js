@@ -11,6 +11,18 @@ var image = {};
 	image.character = false;
 	image.costume = false;
 
+var _keys = [
+	'shift', // hold
+	'alt', // walk up / down
+	'left', // move
+	'right', // move
+	'up', // look up / move
+	'down', // crouch / move
+	'space', // jump
+	'x', // die
+	'a', // attack
+];
+
 $(document).ready(function() {
 
 	// jQuery vars
@@ -45,28 +57,13 @@ $(document).ready(function() {
 					$('<a href="/' + _char.name + '/' + cost_url + '">' + _char.costumes[i].name + '</a>')
 				);
 			}
-			// create a catalogue of known animation frames
-			c._catalogue = [];
-			for_each_tile( function( x, y ) {
-				if( c._catalogue[ x ] == undefined ) c._catalogue[ x ] = [];
-				if( c._catalogue[ x ][ y ] == undefined ) c._catalogue[ x ][ y ] = [];
-			});
-			for( var motion in _animation ) {
-				for( var direction in _animation[ motion ] ) {
-					for( var frame in _animation[ motion ][ direction ][ 1 ] ) {
-						var set = _animation[ motion ][ direction ][ 1 ];
-						if( set[ frame ] instanceof Array && set[ frame ].length == 2 ) {
-							c._catalogue[ set[ frame ][0] ][ set[ frame ][1] ].push( "\n  " + motion + ' : ' + direction + "  " );
-						}
-					}
-				}
-			}
+			create_catalogue();
 		}
 	);
 
 	c = $canvas[0];
 	c._face = false;
-	c._dir = false;
+	c._dir = 'left';
 	c._motion = 'stop';
 	c._mouse = false;
 	c._highlighted = [ 0, 0 ];
@@ -89,6 +86,10 @@ $(document).ready(function() {
 			);
 		}
 	});
+
+	$artboard.mouseout(function() {
+		c._mouse = false;
+	})
 
 	$artboard.click(function(e) {
 		if( c._mouse != 'lock' ) c._mouse = 'lock';
@@ -141,40 +142,50 @@ $(document).ready(function() {
 
 	init_canvas();
 
-	var supported_keys = [
-		'shift',
-		'shift+left',
-		'alt+left',
-		'left',
-		'shift+right',
-		'alt+right',
-		'right',
-		'alt+up',
-		'up',
-		'alt+down',
-		'down',
-		'space',
-		'x'
-	];
-	for( var i in supported_keys ) {
-		$(document).bind('keydown', supported_keys[i], change_state );
-		$(document).bind('keyup', supported_keys[i], change_state );
-	}
-
 	// reload on change
 	$character.change(function(e) { $url.val(''); $form.submit(); });
 	$url.change(function(e) { $form.submit(); });
 
 });
 
-function for_each_tile( func ) {
-	y_max = Math.floor($oldbusted.height() / 48) - 1;
-	x_max = Math.floor($oldbusted.width() / 48) - 1;
-	for( var y = 0; y <= y_max; y++ ) {
-		for( var x = 0; x <= x_max; x++ ) {
-			func( x , y );
+function create_catalogue() {
+	// create a catalogue of known animation frames
+	c._catalogue = [];
+	for_each_tile(
+		function( x, y ) {
+			if( c._catalogue[ x ] == undefined ) c._catalogue[ x ] = [];
+			if( c._catalogue[ x ][ y ] == undefined ) c._catalogue[ x ][ y ] = [];
+		},
+		function() {
+			for( var motion in _animation ) {
+				for( var direction in _animation[ motion ] ) {
+					for( var frame in _animation[ motion ][ direction ][ 1 ] ) {
+						var set = _animation[ motion ][ direction ][ 1 ];
+						if( set[ frame ] instanceof Array && set[ frame ].length == 2 ) {
+							c._catalogue[ set[ frame ][0] ][ set[ frame ][1] ].push( "\n  " + motion + ' : ' + direction + "  " );
+						}
+					}
+				}
+			}
 		}
-	}
+	);
+}
+
+function for_each_tile( func, done ) {
+	(function wait_for_oldbusted() {
+		if( $oldbusted.height() > 0 ) {
+			y_max = Math.floor($oldbusted.height() / 48);
+			x_max = Math.floor($oldbusted.width() / 48);
+			for( var y = 0; y <= y_max - 1; y++ ) {
+				for( var x = 0; x <= x_max - 1; x++ ) {
+					func( x , y );
+				}
+			}
+			if( done instanceof Function ) done();
+		} else {
+			setTimeout( wait_for_oldbusted, 100 );
+		}
+	})();
 }
 
 function get_square_coords( e ) {
@@ -248,38 +259,38 @@ function init_canvas() {
 	}
 }
 
-function change_state( e ) {
-	c._mouse = false;
-	e.preventDefault();
-	if( e.type == 'keydown' ) {
-		if( e.data == 'space' ) 		{ c._motion = 'jump'; }
-		else if( e.data == 'alt+up' )	{ c._motion = 'gazewalk'; }
-		else if( e.data == 'up' ) 		{ c._motion = 'gaze'; }
-		else if( e.data == 'alt+down' ){ c._motion = 'crouchwalk'; }
-		else if( e.data == 'down' ) 	{ c._motion = 'crouch'; }
-		else if( e.data == 'x' ) 		{ c._motion = 'dead'; }
-		else if( e.data == 'shift' ) 	{ c._motion = 'hold'; }
-		else if( e.data == 'shift+left' || e.data == 'shift+right' ) {
-			c._dir = (e.data.split('+'))[1];
-			c._motion = 'holdwalk';
-		} else if( e.data == 'alt+left' || e.data == 'alt+right' ) {
-			c._dir = (e.data.split('+'))[1];
-			c._motion = 'walk';
-		} else if( e.data == 'left' || e.data == 'right' ) {
-			c._dir = e.data;
-			c._motion = 'walk';
-		} else {
-			c._motion = 'stop';
-		}
-	} else {
-		c._face = c._dir;
-		c._motion = 'stop';
-	}
-}
-
 function update() {
 	// handles all inspector movement
 	if( c._mouse == false ) {
+		// check for key presses
+		if( keydown.state ) {
+			// simples have to go at the bottom!
+			     if( keydown.alt && keydown.up )		{ c._motion = 'gazewalk'; }
+			else if( keydown.alt && keydown.down )		{ c._motion = 'crouchwalk'; }
+			else if( keydown.a && keydown.space )		{ c._motion = 'attackjump'; }
+			else if( keydown.a && keydown.space )		{ c._motion = 'attackjump'; }
+			else if( keydown.a && keydown.left )		{ c._motion = 'attackwalk'; }
+			else if( keydown.a && keydown.right )		{ c._motion = 'attackwalk'; }
+			else if( keydown.shift && keydown.left )	{ c._motion = 'holdwalk'; }
+			else if( keydown.shift && keydown.right )	{ c._motion = 'holdwalk'; }
+			else if( keydown.up ) 						{ c._motion = 'gaze'; }
+			else if( keydown.down ) 					{ c._motion = 'crouch'; }
+			else if( keydown.shift ) 					{ c._motion = 'hold'; }
+			else if( keydown.space ) 					{ c._motion = 'jump'; }
+			else if( keydown.x ) 						{ c._motion = 'dead'; }
+			else if( keydown.a ) 						{ c._motion = 'attack'; }
+			else if( keydown.left )						{ c._motion = 'walk'; }
+			else if( keydown.right )					{ c._motion = 'walk'; }
+			else										{ c._motion = 'stop'; }
+
+			// direction
+			if( keydown.left ) { c._dir = 'left' }
+			else if( keydown.right ) { c._dir = 'right' }
+		} else {
+			c._face = c._dir;
+			c._motion = 'stop';
+		}
+		// now be somebody!!!
 		if( c._motion !== 'stop' ) {
 			var _m = _animation[ c._motion ][ c._dir ];
 			if( _m ) {
@@ -329,7 +340,6 @@ function render_image( _pos ) {
 			c.width, // destination width
 			c.height // destination height
 		);
-		ctx.save();
 	}
 	if( image.costume ) {
 		if( !cleared ) ctx.clearRect( 0, 0, c.width, c.height );
@@ -345,7 +355,6 @@ function render_image( _pos ) {
 			c.width, // destination width
 			c.height // destination height
 		);
-		ctx.save();
 	}
 }
 
@@ -383,9 +392,35 @@ var animation_loop = (function() {
 		};
 	} else {
 		onEachFrame = function(cb) {
-			setInterval(cb, 1000 / _FPS);
+			setInterval( cb, 1000 / _FPS );
 		}
 	}
 
 	window.onEachFrame = onEachFrame;
 })();
+
+
+// helper for jquery hotkeys [ http://strd6.com/space_demo/javascripts/key_status.js ]
+// from this [ http://www.html5rocks.com/en/tutorials/canvas/notearsgame/ ]
+$(function() {
+	window.keydown = {};
+
+	function keyName(event) {
+		return jQuery.hotkeys.specialKeys[event.which] ||
+			String.fromCharCode(event.which).toLowerCase();
+	}
+
+	$(document).bind("keydown", function(event) {
+		keydown.state = true;
+		var name = keyName(event);
+		if( _keys.indexOf( name ) !== -1 ) event.preventDefault();
+		keydown[ name ] = true;
+	});
+
+	$(document).bind("keyup", function(event) {
+		keydown.state = false;
+		var name = keyName(event);
+		if( _keys.indexOf( name ) !== -1 ) event.preventDefault();
+		keydown[ name ] = false;
+	});
+});

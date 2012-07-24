@@ -8,6 +8,7 @@ module.exports = function( req, res ) {
 
 	request(
 		'https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/characters/' + character + '.lua',
+//		'http://localhost:8080/Hawkthorne/hawkthorne-journey/src/characters/' + character + '.lua', // for testing local lua files
 		function(error, response, body) {
 
 			var resp = {};
