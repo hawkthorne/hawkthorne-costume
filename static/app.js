@@ -118,7 +118,7 @@ $(document).ready(function() {
 
 	$speed.change(function() {
 		var z = $speed.val();
-		gs._speed_change = Math.floor( z / 100 ) ;
+		gs._speed_change = ( z / 100 ) ;
 		$speed_display.html( z + '%');
 	});
 
@@ -312,7 +312,7 @@ function update() {
 			if( gs._animation[ gs._motion ] ) {
 				var _m = gs._animation[ gs._motion ][ gs._dir ];
 				if( _m ) {
-					if( _m._lfs + ( ( _m[2] * 1000 ) / gs._speed_change ) <= _now ) {
+					if( _m._lfs + Math.floor( ( _m[2] * 1000 ) / gs._speed_change ) <= _now ) {
 						gs._next_frame = _m[1][ _m._step++ % _m[1].length ];
 						_m._lfs = _now;
 						if( _m._step >= _m[1].length ) _m._step = 0;
@@ -323,7 +323,7 @@ function update() {
 			gs._next_frame = gs._animation.idle[ gs._dir ][1][0];
 		}
 	}
-	if( gs._queue.length > 0 && gs._queue_lfs + ( ( gs._queue_delay * 1000 ) / gs._speed_change ) <= _now ) {
+	if( gs._queue.length > 0 && gs._queue_lfs + Math.floor( ( gs._queue_delay * 1000 ) / gs._speed_change ) <= _now ) {
 		var o = gs._queue.shift();
 		gs._next_frame = o;
 		gs._queue_lfs = _now;
