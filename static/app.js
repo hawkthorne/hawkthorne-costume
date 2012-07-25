@@ -62,16 +62,16 @@ $(document).ready(function() {
 	);
 
 	c = $canvas[0];
-	c._face = false;
 	c._dir = 'left';
 	c._motion = 'stop';
 	c._mouse = false;
-	c._highlighted = [ 0, 0 ];
+	c._next_frame = [ 0, 0 ];
 
 	// animation queue
 	c._queue = [];
 
 	$artboard.mousemove(function(e) {
+		c._queue = [];
 		if( c._mouse != 'lock' ) {
 			c._mouse = true;
 			var loc = get_square_coords(e);
@@ -79,7 +79,7 @@ $(document).ready(function() {
 				left: loc.X * 48,
 				top: loc.Y * 48
 			} );
-			c._highlighted = [ loc.X, loc.Y ];
+			c._next_frame = [ loc.X, loc.Y ];
 			$artboard.attr(
 				'title',
 				  '[ ' + ( loc.X + 1 ) + ', ' + ( loc.Y + 1 ) + ' ]' + c._catalogue[ loc.X ][ loc.Y ].join('')
@@ -129,8 +129,6 @@ $(document).ready(function() {
 	$play_buttons.click(function() {
 		var action = this.id;
 		c._mouse = false;
-		c._face = false;
-		c._dir = false;
 		if( action == 'play_all' ) {
 			for_each_tile( function(x,y) {
 				c._queue.push( [ x, y ] );
@@ -159,6 +157,7 @@ function create_catalogue() {
 		function() {
 			for( var motion in _animation ) {
 				for( var direction in _animation[ motion ] ) {
+					_animation[ motion ][ direction ]._step = 0; // init a counter for future animations
 					for( var frame in _animation[ motion ][ direction ][ 1 ] ) {
 						var set = _animation[ motion ][ direction ][ 1 ];
 						if( set[ frame ] instanceof Array && set[ frame ].length == 2 ) {
@@ -251,7 +250,6 @@ function init_canvas() {
 		}
 		var ctx = c.getContext('2d');
 		ctx.clearRect(0,0,c.height,c.width);
-		render_image( c._highlighted );
 
 		// starts the animation loop
 		window.onEachFrame( animation_loop );
@@ -263,63 +261,58 @@ function update() {
 	// handles all inspector movement
 	if( c._mouse == false && _animation ) {
 		// check for key presses
-		if( keydown.state ) {
-			// simples have to go at the bottom!
-			     if( keydown.alt && keydown.up )		{ c._motion = 'gazewalk'; }
-			else if( keydown.alt && keydown.down )		{ c._motion = 'crouchwalk'; }
-			else if( keydown.a && keydown.space )		{ c._motion = 'attackjump'; }
-			else if( keydown.a && keydown.space )		{ c._motion = 'attackjump'; }
-			else if( keydown.a && keydown.left )		{ c._motion = 'attackwalk'; }
-			else if( keydown.a && keydown.right )		{ c._motion = 'attackwalk'; }
-			else if( keydown.shift && keydown.left )	{ c._motion = 'holdwalk'; }
-			else if( keydown.shift && keydown.right )	{ c._motion = 'holdwalk'; }
-			else if( keydown.up ) 						{ c._motion = 'gaze'; }
-			else if( keydown.down ) 					{ c._motion = 'crouch'; }
-			else if( keydown.shift ) 					{ c._motion = 'hold'; }
-			else if( keydown.space ) 					{ c._motion = 'jump'; }
-			else if( keydown.x ) 						{ c._motion = 'dead'; }
-			else if( keydown.a ) 						{ c._motion = 'attack'; }
-			else if( keydown.left )						{ c._motion = 'walk'; }
-			else if( keydown.right )					{ c._motion = 'walk'; }
-			else										{ c._motion = 'stop'; }
 
-			// direction
-			if( keydown.left ) { c._dir = 'left' }
-			else if( keydown.right ) { c._dir = 'right' }
-		} else {
-			c._face = c._dir;
-			c._motion = 'stop';
-		}
+		// simples have to go at the bottom!
+		     if( keydown.alt && keydown.up )		{ c._motion = 'gaze'; }
+		else if( keydown.alt && keydown.down )		{ c._motion = 'crouch'; }
+		else if( keydown.a && keydown.space )		{ c._motion = 'attackjump'; }
+		else if( keydown.a && keydown.space )		{ c._motion = 'attackjump'; }
+		else if( keydown.a && keydown.left )		{ c._motion = 'attackwalk'; }
+		else if( keydown.a && keydown.right )		{ c._motion = 'attackwalk'; }
+		else if( keydown.shift && keydown.left )	{ c._motion = 'holdwalk'; }
+		else if( keydown.shift && keydown.right )	{ c._motion = 'holdwalk'; }
+		else if( keydown.up ) 						{ c._motion = 'gazewalk'; }
+		else if( keydown.down ) 					{ c._motion = 'crouchwalk'; }
+		else if( keydown.shift ) 					{ c._motion = 'hold'; }
+		else if( keydown.space ) 					{ c._motion = 'jump'; }
+		else if( keydown.x ) 						{ c._motion = 'dead'; }
+		else if( keydown.a ) 						{ c._motion = 'attack'; }
+		else if( keydown.left )						{ c._motion = 'walk'; }
+		else if( keydown.right )					{ c._motion = 'walk'; }
+		else										{ c._motion = 'stop'; }
+
+		// direction
+		if( keydown.left ) { c._dir = 'left' }
+		else if( keydown.right ) { c._dir = 'right' }
+
 		// now be somebody!!!
 		if( c._motion !== 'stop' ) {
+			c._queue = [];
 			if( _animation[ c._motion ] ) {
 				var _m = _animation[ c._motion ][ c._dir ];
-				if( _m ) {
-					if( !_m._step ) _m._step = 0;
-					c._queue.push( _m[1][ _m._step++ % _m[1].length ] );
+				if( _m ) { // we should only do this, if the delay is correct or something...
+					c._next_frame = _m[1][ _m._step++ % _m[1].length ];
+					if( _m._step >= _m[1].length ) _m._step = 0;
 				}
 			}
-		} else if( c._face !== false ) {
-			c._queue.push( _animation.idle[ c._face ][1][0] );
+		} else {
+			c._next_frame = _animation.idle[ c._dir ][1][0];
 		}
 	}
 	if( c._queue.length > 0 ) {
 		var o = c._queue.shift();
 		c._next_frame = o;
-	} else {
-		c._next_frame = c._highlighted;
 	}
 }
 
 function draw() {
 	if( c._mouse == 'lock' ) $highlighter.css({background: '#f00'});
 	else $highlighter.css({background: ''});
-	if( c._next_frame ) {
+	if( c._next_frame ) {;
 		$highlighter.css( {
 			left: c._next_frame[0] * 48,
 			top: c._next_frame[1] * 48
 		} );
-		c._highlighted = c._next_frame.slice(0);
 		render_image( c._next_frame );
 	}
 }
@@ -413,14 +406,12 @@ $(function() {
 	}
 
 	$(document).bind("keydown", function(event) {
-		keydown.state = true;
 		var name = keyName(event);
 		if( _keys.indexOf( name ) !== -1 ) event.preventDefault();
 		keydown[ name ] = true;
 	});
 
 	$(document).bind("keyup", function(event) {
-		keydown.state = false;
 		var name = keyName(event);
 		if( _keys.indexOf( name ) !== -1 ) event.preventDefault();
 		keydown[ name ] = false;
