@@ -118,8 +118,8 @@ $(document).ready(function() {
 
 	$speed.change(function() {
 		var z = $speed.val();
-		gs._speed_change = z;
-		$speed_display.html( Math.floor( z * 100 ) + '%');
+		gs._speed_change = Math.floor( z / 100 ) ;
+		$speed_display.html( z + '%');
 	});
 
 	$bg.change(function(e) {
