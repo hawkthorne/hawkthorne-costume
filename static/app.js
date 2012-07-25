@@ -1,16 +1,23 @@
-var _char = false,
-	_animation = false,
-	_FPS = 10;
+var gs = {}; // game state
+	gs._char = false;
+	gs._animation = false;
+	gs._FPS = 60;
+	gs._queue_delay = 0.16; // match common game delay for play buttons
+	gs._queue_lfs = 0;
+	gs._speed_change = 1;
 
+// jquery query vars
 var $form, $newhotness, $oldbusted, $character, $bg,
 	$url, $artboard, $highlighter, $play_buttons, $stop,
 	$canvas, c, $zoom_slide, $zoom_size, $char_toggle,
-	$char_opacity, $char_opacity_size;
+	$char_opacity, $char_opacity_size, $speed, $speed_display;
 
+// primary image loaders
 var image = {};
 	image.character = false;
 	image.costume = false;
 
+// valid keys
 var _keys = [
 	'shift', // hold
 	'alt', // walk up / down
@@ -42,19 +49,21 @@ $(document).ready(function() {
 	$char_toggle = $('#char');
 	$char_opacity = $('#char_opacity');
 	$char_opacity_size = $('.char_opacity_size');
+	$speed = $('#speed');
+	$speed_display = $('#speed_display');
 
 	// start loading the character lua asap
 	$.getJSON(
 		'/lua/' + $character.val(),
 		function(data, textStatus, jqXHR) {
-			_char = data.data;
-			_animation = data.data.animations;
-			costumes = _char.costumes;
+			gs._char = data.data;
+			gs._animation = data.data.animations;
+			costumes = gs._char.costumes;
 			costumes.shift();
 			for( var i in costumes ) {
-				var cost_url = encodeURIComponent( 'https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/' + _char.costumes[i].sheet );
+				var cost_url = encodeURIComponent( 'https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/' + gs._char.costumes[i].sheet );
 				$('#in_game_costumes').append(
-					$('<a href="/' + _char.name + '/' + cost_url + '">' + _char.costumes[i].name + '</a>')
+					$('<a href="/' + gs._char.name + '/' + cost_url + '">' + gs._char.costumes[i].name + '</a>')
 				);
 			}
 			create_catalogue();
@@ -62,38 +71,39 @@ $(document).ready(function() {
 	);
 
 	c = $canvas[0];
-	c._dir = 'left';
-	c._motion = 'stop';
-	c._mouse = false;
-	c._next_frame = [ 0, 0 ];
+
+	gs._dir = 'left';
+	gs._motion = 'stop';
+	gs._mouse = false;
+	gs._next_frame = [ 0, 0 ];
 
 	// animation queue
-	c._queue = [];
+	gs._queue = [];
 
 	$artboard.mousemove(function(e) {
-		c._queue = [];
-		if( c._mouse != 'lock' ) {
-			c._mouse = true;
+		gs._queue = [];
+		if( gs._mouse != 'lock' ) {
+			gs._mouse = true;
 			var loc = get_square_coords(e);
 			$highlighter.css( {
 				left: loc.X * 48,
 				top: loc.Y * 48
 			} );
-			c._next_frame = [ loc.X, loc.Y ];
+			gs._next_frame = [ loc.X, loc.Y ];
 			$artboard.attr(
 				'title',
-				  '[ ' + ( loc.X + 1 ) + ', ' + ( loc.Y + 1 ) + ' ]' + c._catalogue[ loc.X ][ loc.Y ].join('')
+				  '[ ' + ( loc.X + 1 ) + ', ' + ( loc.Y + 1 ) + ' ]' + gs._catalogue[ loc.X ][ loc.Y ].join('')
 			);
 		}
 	});
 
 	$artboard.mouseout(function() {
-		c._mouse = false;
+		gs._mouse = false;
 	})
 
 	$artboard.click(function(e) {
-		if( c._mouse != 'lock' ) c._mouse = 'lock';
-		else c._mouse = true;
+		if( gs._mouse != 'lock' ) gs._mouse = 'lock';
+		else gs._mouse = true;
 	});
 
 	// Inspector controls
@@ -104,6 +114,12 @@ $(document).ready(function() {
 			"height": ( z * 48 ) + "px"
 		});
 		$zoom_size.html('x' + z);
+	});
+
+	$speed.change(function() {
+		var z = $speed.val();
+		gs._speed_change = z;
+		$speed_display.html( Math.floor( z * 100 ) + '%');
 	});
 
 	$bg.change(function(e) {
@@ -128,13 +144,13 @@ $(document).ready(function() {
 
 	$play_buttons.click(function() {
 		var action = this.id;
-		c._mouse = false;
+		gs._mouse = false;
 		if( action == 'play_all' ) {
 			for_each_tile( function(x,y) {
-				c._queue.push( [ x, y ] );
+				gs._queue.push( [ x, y ] );
 			});
 		} else if( action == 'stop' ) {
-			c._queue = [];
+			gs._queue = [];
 		}
 	});
 
@@ -148,20 +164,21 @@ $(document).ready(function() {
 
 function create_catalogue() {
 	// create a catalogue of known animation frames
-	c._catalogue = [];
+	gs._catalogue = [];
 	for_each_tile(
 		function( x, y ) {
-			if( c._catalogue[ x ] == undefined ) c._catalogue[ x ] = [];
-			if( c._catalogue[ x ][ y ] == undefined ) c._catalogue[ x ][ y ] = [];
+			if( gs._catalogue[ x ] == undefined ) gs._catalogue[ x ] = [];
+			if( gs._catalogue[ x ][ y ] == undefined ) gs._catalogue[ x ][ y ] = [];
 		},
 		function() {
-			for( var motion in _animation ) {
-				for( var direction in _animation[ motion ] ) {
-					_animation[ motion ][ direction ]._step = 0; // init a counter for future animations
-					for( var frame in _animation[ motion ][ direction ][ 1 ] ) {
-						var set = _animation[ motion ][ direction ][ 1 ];
+			for( var motion in gs._animation ) {
+				for( var direction in gs._animation[ motion ] ) {
+					gs._animation[ motion ][ direction ]._step = 0; // init a counter for future animations
+					gs._animation[ motion ][ direction ]._lfs = 0;  // init a last frame stamp
+					for( var frame in gs._animation[ motion ][ direction ][ 1 ] ) {
+						var set = gs._animation[ motion ][ direction ][ 1 ];
 						if( set[ frame ] instanceof Array && set[ frame ].length == 2 ) {
-							c._catalogue[ set[ frame ][0] ][ set[ frame ][1] ].push( "\n  " + motion + ' : ' + direction + "  " );
+							gs._catalogue[ set[ frame ][0] ][ set[ frame ][1] ].push( "\n  " + motion + ' : ' + direction + "  " );
 						}
 					}
 				}
@@ -202,7 +219,7 @@ function show_spinner( c ) {
 	var cog = new Image();
 	function init() {
 		cog.src = '/static/loading.png'; // Set source path
-		c.spinInterval = setInterval(draw,10);
+		gs._spinInterval = setInterval(draw,10);
 	}
 	var rotation = 0;
 	function draw() {
@@ -244,76 +261,84 @@ function init_canvas() {
 	}
 
 	function ready() {
-		if( c.spinInterval ) {
-			clearInterval( c.spinInterval );
-			delete c.spinInterval;
+		if( gs._spinInterval ) {
+			clearInterval( gs._spinInterval );
+			delete gs._spinInterval;
 		}
 		var ctx = c.getContext('2d');
 		ctx.clearRect(0,0,c.height,c.width);
 
 		// starts the animation loop
-		window.onEachFrame( animation_loop );
+		(function animloop(){
+			requestAnimFrame(animloop);
+			render();
+		})();
 
 	}
 }
 
 function update() {
+	var _now = (new Date).getTime();
 	// handles all inspector movement
-	if( c._mouse == false && _animation ) {
+	if( gs._mouse == false && gs._animation ) {
 		// check for key presses
 
 		// simples have to go at the bottom!
-		     if( keydown.alt && keydown.up )		{ c._motion = 'gaze'; }
-		else if( keydown.alt && keydown.down )		{ c._motion = 'crouch'; }
-		else if( keydown.a && keydown.space )		{ c._motion = 'attackjump'; }
-		else if( keydown.a && keydown.space )		{ c._motion = 'attackjump'; }
-		else if( keydown.a && keydown.left )		{ c._motion = 'attackwalk'; }
-		else if( keydown.a && keydown.right )		{ c._motion = 'attackwalk'; }
-		else if( keydown.shift && keydown.left )	{ c._motion = 'holdwalk'; }
-		else if( keydown.shift && keydown.right )	{ c._motion = 'holdwalk'; }
-		else if( keydown.up ) 						{ c._motion = 'gazewalk'; }
-		else if( keydown.down ) 					{ c._motion = 'crouchwalk'; }
-		else if( keydown.shift ) 					{ c._motion = 'hold'; }
-		else if( keydown.space ) 					{ c._motion = 'jump'; }
-		else if( keydown.x ) 						{ c._motion = 'dead'; }
-		else if( keydown.a ) 						{ c._motion = 'attack'; }
-		else if( keydown.left )						{ c._motion = 'walk'; }
-		else if( keydown.right )					{ c._motion = 'walk'; }
-		else										{ c._motion = 'stop'; }
+		     if( keydown.alt && keydown.up )		{ gs._motion = 'gaze'; }
+		else if( keydown.alt && keydown.down )		{ gs._motion = 'crouch'; }
+		else if( keydown.a && keydown.space )		{ gs._motion = 'attackjump'; }
+		else if( keydown.a && keydown.space )		{ gs._motion = 'attackjump'; }
+		else if( keydown.a && keydown.left )		{ gs._motion = 'attackwalk'; }
+		else if( keydown.a && keydown.right )		{ gs._motion = 'attackwalk'; }
+		else if( keydown.shift && keydown.left )	{ gs._motion = 'holdwalk'; }
+		else if( keydown.shift && keydown.right )	{ gs._motion = 'holdwalk'; }
+		else if( keydown.up ) 						{ gs._motion = 'gazewalk'; }
+		else if( keydown.down ) 					{ gs._motion = 'crouchwalk'; }
+		else if( keydown.shift ) 					{ gs._motion = 'hold'; }
+		else if( keydown.space ) 					{ gs._motion = 'jump'; }
+		else if( keydown.x ) 						{ gs._motion = 'dead'; }
+		else if( keydown.a ) 						{ gs._motion = 'attack'; }
+		else if( keydown.left )						{ gs._motion = 'walk'; }
+		else if( keydown.right )					{ gs._motion = 'walk'; }
+		else										{ gs._motion = 'stop'; }
 
 		// direction
-		if( keydown.left ) { c._dir = 'left' }
-		else if( keydown.right ) { c._dir = 'right' }
+		if( keydown.left ) { gs._dir = 'left' }
+		else if( keydown.right ) { gs._dir = 'right' }
 
 		// now be somebody!!!
-		if( c._motion !== 'stop' ) {
-			c._queue = [];
-			if( _animation[ c._motion ] ) {
-				var _m = _animation[ c._motion ][ c._dir ];
-				if( _m ) { // we should only do this, if the delay is correct or something...
-					c._next_frame = _m[1][ _m._step++ % _m[1].length ];
-					if( _m._step >= _m[1].length ) _m._step = 0;
+		if( gs._motion !== 'stop' ) {
+			gs._queue = [];
+			if( gs._animation[ gs._motion ] ) {
+				var _m = gs._animation[ gs._motion ][ gs._dir ];
+				if( _m ) {
+					if( _m._lfs + ( ( _m[2] * 1000 ) / gs._speed_change ) <= _now ) {
+						gs._next_frame = _m[1][ _m._step++ % _m[1].length ];
+						_m._lfs = _now;
+						if( _m._step >= _m[1].length ) _m._step = 0;
+					}
 				}
 			}
-		} else {
-			c._next_frame = _animation.idle[ c._dir ][1][0];
+		} else if( gs._queue.length == 0 ) {
+			gs._next_frame = gs._animation.idle[ gs._dir ][1][0];
 		}
 	}
-	if( c._queue.length > 0 ) {
-		var o = c._queue.shift();
-		c._next_frame = o;
+	if( gs._queue.length > 0 && gs._queue_lfs + ( ( gs._queue_delay * 1000 ) / gs._speed_change ) <= _now ) {
+		var o = gs._queue.shift();
+		gs._next_frame = o;
+		gs._queue_lfs = _now;
 	}
 }
 
 function draw() {
-	if( c._mouse == 'lock' ) $highlighter.css({background: '#f00'});
+	if( gs._mouse == 'lock' ) $highlighter.css({background: '#f00'});
 	else $highlighter.css({background: ''});
-	if( c._next_frame ) {;
+	if( gs._next_frame ) {;
 		$highlighter.css( {
-			left: c._next_frame[0] * 48,
-			top: c._next_frame[1] * 48
+			left: gs._next_frame[0] * 48,
+			top: gs._next_frame[1] * 48
 		} );
-		render_image( c._next_frame );
+		render_image( gs._next_frame );
 	}
 }
 
@@ -353,9 +378,8 @@ function render_image( _pos ) {
 	}
 }
 
-var animation_loop = (function() {
+var render = (function() {
 	var loops = 0,
-		skipTicks = 1000 / _FPS,
 		maxFrameSkip = 10,
 		nextGameTick = (new Date).getTime();
 
@@ -364,7 +388,7 @@ var animation_loop = (function() {
 
 		while ((new Date).getTime() > nextGameTick && loops < maxFrameSkip) {
 			update();
-			nextGameTick += skipTicks;
+			nextGameTick += ( 1000 / gs._FPS );
 			loops++;
 		}
 
@@ -372,28 +396,17 @@ var animation_loop = (function() {
 	};
 })();
 
-// animation loop ( courtesy of http://nokarma.org/2011/02/02/javascript-game-development-the-game-loop/index.html )
-(function() {
-	var onEachFrame;
-	if (window.webkitRequestAnimationFrame) {
-		onEachFrame = function(cb) {
-			var _cb = function() { cb(); webkitRequestAnimationFrame(_cb); }
-			_cb();
-		};
-	} else if (window.mozRequestAnimationFrame) {
-		onEachFrame = function(cb) {
-			var _cb = function() { cb(); mozRequestAnimationFrame(_cb); }
-			_cb();
-		};
-	} else {
-		onEachFrame = function(cb) {
-			setInterval( cb, 1000 / _FPS );
-		}
-	}
-
-	window.onEachFrame = onEachFrame;
+// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+window.requestAnimFrame = (function(){
+	return  window.requestAnimationFrame       ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame    ||
+			window.oRequestAnimationFrame      ||
+			window.msRequestAnimationFrame     ||
+			function( callback ){
+				window.setTimeout(callback, 1000 / gs._FPS);
+			};
 })();
-
 
 // helper for jquery hotkeys [ http://strd6.com/space_demo/javascripts/key_status.js ]
 // from this [ http://www.html5rocks.com/en/tutorials/canvas/notearsgame/ ]

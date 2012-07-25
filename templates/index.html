@@ -69,7 +69,12 @@
 				<div class="controls play">
 					<button id="play_all">Play All Tiles, In Order</button>
 					<button id="stop">Stop</button>
-					</br>
+					<fieldset>
+						<label for="speed">Playback Speed:</label>
+						<input id="speed" type="range" step=".05" min=".05" max="2" value="1"/>
+						<span id="speed_display">100%</span>
+					</fieldset>
+					<br>
 					Walk: [Left] / [Right] / [Up] / [Down]<br>
 					Look Up / Crouch: [Alt + Up] / [Alt + Down]<br>
 					Hold: [Shift]<br>

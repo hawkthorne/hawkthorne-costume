@@ -160,7 +160,7 @@ button, #toolbar .submit {
 }
 
 #inspector_spacetime .controls > * {
-	margin: 9px;
+	margin: 9px 0;
 }
 
 #inspector_spacetime .controls fieldset input,
