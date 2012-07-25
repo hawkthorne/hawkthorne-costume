@@ -368,7 +368,7 @@ var animation_loop = (function() {
 			loops++;
 		}
 
-		draw();
+		if( loops ) draw();
 	};
 })();
 
