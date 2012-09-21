@@ -15,8 +15,22 @@ var express = require('express'),
 // start the app
 var app = module.exports = express.createServer();
 
-var baseurl = "https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/images/"
-  , characters = ['jeff', 'troy', 'annie', 'britta', 'shirley', 'pierce', 'abed'];
+var baseurl = "https://raw.github.com/kyleconroy/hawkthorne-journey/master/src/"
+  , characters = [
+		'abed',
+		'annie',
+		'britta',
+		'jeff',
+		'pierce',
+		'shirley',
+		'troy',
+		'guzman',
+		'buddy',
+		'leonard',
+		'fatneil',
+		'chang',
+		'vicedean',
+	];
 
 // Configuration
 app.configure(function(){
@@ -111,7 +125,7 @@ app.get('/:character/:in_url?', function(req, res) {
 			source: url,
 			characters: characters,
 			character: character,
-			original: baseurl + character + ".png"
+			original: baseurl + 'images/characters/' + character + "/base.png"
 		} );
 	}
 

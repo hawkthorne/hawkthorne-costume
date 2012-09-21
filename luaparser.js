@@ -7,8 +7,8 @@ module.exports = function( req, res ) {
 	var character = req.params.character;
 
 	request(
-		'https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/characters/' + character + '.lua',
-//		'http://localhost:8080/Hawkthorne/hawkthorne-journey/src/characters/' + character + '.lua', // for testing local lua files
+		'https://raw.github.com/jhoff/hawkthorne-journey/tabs_and_folder_structure/src/characters/' + character + '.lua',
+
 		function(error, response, body) {
 
 			var resp = {};
@@ -48,6 +48,9 @@ module.exports = function( req, res ) {
 
 							// variables
 							l = l.replace( /local /, 'var ' );
+
+							// string concatenation
+							l = l.replace( /\.\./g, '+' );
 
 							// love specific code
 							l = l.replace( /love\.graphics\.newImage\((.*)\)/, '$1' );
@@ -112,7 +115,7 @@ module.exports = function( req, res ) {
 						}
 					}
 
-					//console.log( _out );
+					// console.log( _out );
 
 					try {
 						eval( _out.join("\n") );

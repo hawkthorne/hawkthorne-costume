@@ -61,7 +61,7 @@ $(document).ready(function() {
 			costumes = gs._char.costumes;
 			costumes.shift();
 			for( var i in costumes ) {
-				var cost_url = encodeURIComponent( 'https://github.com/kyleconroy/hawkthorne-journey/raw/master/src/' + gs._char.costumes[i].sheet );
+				var cost_url = encodeURIComponent( 'https://raw.github.com/kyleconroy/hawkthorne-journey/master/src/images/characters/' + gs._char.name + '/' + gs._char.costumes[i].sheet + '.png' );
 				$('#in_game_costumes').append(
 					$('<a href="/' + gs._char.name + '/' + cost_url + '">' + gs._char.costumes[i].name + '</a>')
 				);
