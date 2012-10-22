@@ -7,7 +7,7 @@ module.exports = function( req, res ) {
 	var character = req.params.character;
 
 	request(
-		'https://raw.github.com/jhoff/hawkthorne-journey/tabs_and_folder_structure/src/characters/' + character + '.lua',
+		'https://raw.github.com/kyleconroy/hawkthorne-journey/master/src/characters/' + character + '.lua',
 
 		function(error, response, body) {
 
