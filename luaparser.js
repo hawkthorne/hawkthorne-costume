@@ -38,6 +38,7 @@ module.exports = function( req, res ) {
 							|| /return /.test(l)		// not returning anything
 							|| /beam:/.test(l)			// mmmm beams...
 							|| /local new_plyr/.test(l) // remove redeclaration of plyr
+							|| /position_matrix_main/.test(l) // remove redeclaration of plyr
 						)) {
 
 							// fix objects
@@ -115,12 +116,12 @@ module.exports = function( req, res ) {
 						}
 					}
 
-					// console.log( _out );
+					//console.log( _out );
 
 					try {
 						eval( _out.join("\n") );
 					} catch( e ) {
-						resp.parseError = e;
+						resp.parseError = e+'';
 					}
 
 					if( plyr instanceof Object && !resp.parseError ) {
@@ -128,6 +129,7 @@ module.exports = function( req, res ) {
 						resp.data = plyr;
 					} else {
 						resp.result = 'parse error';
+						resp.plyr = plyr;
 					}
 
 				} else {
