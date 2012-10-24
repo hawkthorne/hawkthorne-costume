@@ -29,7 +29,7 @@ var baseurl = "https://raw.github.com/kyleconroy/hawkthorne-journey/master/src/"
 		'jeff',
 		'leonard',
 		'pierce',
-		'rick',
+		'rich',
 		'shirley',
 		'troy',
 		'vicedean',
